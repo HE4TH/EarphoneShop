@@ -5,3 +5,5 @@ db.password=YOUR_DB_PASSWORD
 mistral.api.key=YOUR_MISTRAL_API_KEY
 
 gemini.api.key=YOUR_GEMINI_API_KEY
+
+upload.base.path=C:\\path\\to\\EarPhoneMarket\\src\\main\\webapp\\resource

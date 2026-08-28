@@ -74,7 +74,10 @@ src/main/webapp/
 
    mistral.api.key=YOUR_MISTRAL_API_KEY
    gemini.api.key=YOUR_GEMINI_API_KEY
+
+   upload.base.path=C:\\path\\to\\EarPhoneMarket\\src\\main\\webapp\\resource
    ```
+   - `upload.base.path`는 관리자 페이지에서 상품 이미지를 업로드할 때 저장되는 절대경로입니다. 본인의 로컬 프로젝트 경로에 맞게 지정해 주세요.
    - `config.properties`는 `.gitignore`에 등록되어 있어 저장소에는 올라가지 않습니다.
 
 3. **Eclipse에서 실행**

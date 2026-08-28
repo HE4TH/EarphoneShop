@@ -12,9 +12,9 @@
         return;
     }
 
-    // 1. 이미지 저장소 절대경로 지정 (메인과 상세 분리)
-    String baseWorkspacePath = "C:\\Users\\tmdal\\eclipse-workspace\\EarPhoneMarket\\src\\main\\webapp\\resource";
-    
+    // 1. 이미지 저장소 절대경로 지정 (메인과 상세 분리, config.properties에서 로드)
+    String baseWorkspacePath = util.ConfigLoader.get("upload.base.path");
+
     String mainUploadPath = baseWorkspacePath + "\\main";
     String descUploadPath = baseWorkspacePath + "\\description"; // 상세 이미지 전용 저장 폴더
 
