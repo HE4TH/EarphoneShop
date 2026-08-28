@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
-    // 🎯 [세션 감시선] 로그인 성공 시 processLogin.jsp가 박아둔 아이디와 이름을 가로챕니다.
+    // 로그인 성공 시 processLogin.jsp가 세션에 저장한 아이디와 이름을 조회
     String sessionUserId = (String) session.getAttribute("userId");
     String sessionUserName = (String) session.getAttribute("userName");
 %>

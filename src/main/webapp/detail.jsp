@@ -5,7 +5,7 @@
 <%@ page import="java.util.ArrayList"%>
 
 <% 
-	// 🎯 1. 중복 분산되어 있던 DB 조회를 페이지 최상단 한 곳으로 집약 및 단일화!
+	// 1. 상품 DB 조회
 	long pId = Long.parseLong(request.getParameter("productId"));
 	EarPhoneRepository dao = EarPhoneRepository.getInstance();
 	EarPhone earphone = dao.getEarPhoneById(pId);
@@ -246,7 +246,7 @@
 	        });
 	    }
 
-	    /* 💬 비동기 챗봇 통신 스크립트 파트 */
+	    /* AI 챗봇 비동기 통신 */
 	    function toggleAiChatBot() {
 	        const chatWin = document.getElementById("aiChatWindow");
 	        if (chatWin.style.display === "none" || chatWin.style.display === "") {

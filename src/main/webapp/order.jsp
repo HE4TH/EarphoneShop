@@ -4,7 +4,7 @@
 <%@ page import="dto.EarPhone" %>
 
 <%
-    // 1. 보안 방어선: 로그인 검증
+    // 1. 로그인 검증
     String sessionUserId = (String) session.getAttribute("userId");
     if (sessionUserId == null || sessionUserId.trim().isEmpty()) {
 %>
@@ -28,7 +28,7 @@
         return;
     }
 
-    // 3. 선택 상품 주문 필터링 엔진 (selectedProducts 수신)
+    // 3. 선택된 상품만 필터링 (selectedProducts 수신)
     String[] checkedProducts = request.getParameterValues("selectedProducts");
     ArrayList<EarPhone> cartList = new ArrayList<EarPhone>();
 
@@ -50,9 +50,9 @@
     String mName = "";
     String mail = "";
     String phone = "";
-    String zipCode = "";         // ⚡ 신규 연동
-    String address = "";         // ⚡ 신규 연동 (시/구/동 기본주소 전용)
-    String addressDetail = "";   // ⚡ 신규 연동 (동/호수 상세주소 전용)
+    String zipCode = "";
+    String address = "";         // 시/구/동 기본주소
+    String addressDetail = "";   // 동/호수 상세주소
 
     Connection conn = null;
     PreparedStatement pstmt = null;
@@ -61,11 +61,8 @@
     try {
         conn = util.DBConnection.getConnection();
         
-        // 🎯 확장한 새 컬럼들(zipCode, addressDetail)까지 빠짐없이 쿼리에 적재합니다.
-      	String sql = "SELECT mName, mail, phone, zipCode, address, addressDetail FROM member WHERE TRIM(mId) = ?";
+        String sql = "SELECT mName, mail, phone, zipCode, address, addressDetail FROM member WHERE TRIM(mId) = ?";
         pstmt = conn.prepareStatement(sql);
-        
-        // 보낸 파라미터 값도 완벽하게 공백을 깎아 매핑합니다.
         pstmt.setString(1, sessionUserId.trim());
         rs = pstmt.executeQuery();
         
@@ -74,7 +71,7 @@
             mail = rs.getString("mail");
             phone = rs.getString("phone");
             
-            // 🧱 DB에서 쪼개진 데이터를 각각 독립적으로 수신! (null 방어선 구축)
+            // null 방어 처리
             zipCode       = rs.getString("zipCode");
             address       = rs.getString("address");
             addressDetail = rs.getString("addressDetail");

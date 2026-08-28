@@ -4,7 +4,7 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.text.DecimalFormat" %>
 <%
-    // 🔒 관리자 세션 보안 검증
+    // 관리자 세션 검증
     String sessionUserId = (String) session.getAttribute("userId");
     if (sessionUserId == null || !sessionUserId.equals("admin")) {
 %>

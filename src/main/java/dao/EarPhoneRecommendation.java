@@ -15,7 +15,7 @@ public class EarPhoneRecommendation {
     // config.properties에서 로드
 	private static final String API_KEY = ConfigLoader.get("gemini.api.key");
 
-	// ⭐️ [최종 고정] 방금 cmd 테스트 성공한 2.5-flash 주소로 셋팅합니다.
+	// Gemini 2.5-flash 모델 엔드포인트
 	private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY;
 	
     public static String getAiRecommendations(EarPhone currentProduct) {

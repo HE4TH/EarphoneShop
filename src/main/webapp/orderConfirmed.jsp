@@ -1,15 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.text.DecimalFormat" %>
 <%
-    // 1. 주소창으로 넘어오는 한글 데이터 깨짐 방지 설정
+    // 1. 한글 인코딩 설정
     request.setCharacterEncoding("UTF-8");
-    
+
     String orderName = request.getParameter("orderName");
-    
-    // 2. 톰캣 파라미터 한글 복원 엔진 구동 (??? 깨짐 현상 원천 차단)
+
+    // 2. URL 파라미터로 전달된 한글 이름 디코딩
     if (orderName != null) {
         try {
-            // 이 구문이 주소창 규격 때문에 ???로 변해버린 한글 이름을 정갈하게 되돌려줍니다.
             orderName = java.net.URLDecoder.decode(orderName, "UTF-8");
         } catch(Exception e) {
             orderName = request.getParameter("orderName");

@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.sql.*" %>
 <%
-    // 🔒 관리자 권한 검증
+    // 관리자 권한 검증
     String sessionUserId = (String) session.getAttribute("userId");
     if (sessionUserId == null || !sessionUserId.equals("admin")) {
         response.sendRedirect("../login.jsp");

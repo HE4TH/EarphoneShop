@@ -3,7 +3,7 @@
 <%@ page import="java.text.DecimalFormat" %>
 
 <%
-    // 1. 보안 방어선: 로그인 검증
+    // 1. 로그인 검증
     String sessionUserId = (String) session.getAttribute("userId");
     if (sessionUserId == null || sessionUserId.trim().isEmpty()) {
 %>
@@ -17,7 +17,7 @@
 
     DecimalFormat df = new DecimalFormat("#,###");
 
-    // 2. 회원 데이터 긁어오기
+    // 2. 회원 데이터 조회
     String mName = "";
     String mail = "";
     String phone = "";
@@ -77,7 +77,7 @@
         .my-form-group input[type="text"], .my-form-group input[type="password"] { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; }
         .my-form-group input[readonly] { background-color: #f1f5f9; cursor: not-allowed; }
         
-        /* 🚨 회원 탈퇴 경고 박스 */
+        /* 회원 탈퇴 경고 박스 */
         .withdraw-warning-box { background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: left; }
         .withdraw-warning-box p { color: #be123c; font-size: 13px; margin: 4px 0; font-weight: 500; }
     </style>
@@ -269,7 +269,7 @@
             }).open();
         }
 
-        // 🚨 회원 탈퇴 전 더블 체크 얼럿 검증 스크립트
+        // 회원 탈퇴 전 비밀번호 및 2단계 확인
         function confirmWithdraw() {
             const passInput = document.getElementById('withdraw_pass').value;
             if(!passInput.trim()) {

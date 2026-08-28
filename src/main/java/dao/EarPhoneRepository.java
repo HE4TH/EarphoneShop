@@ -51,19 +51,19 @@ public class EarPhoneRepository {
     public ArrayList<EarPhone> getProductsByCategory(String category) {
         ArrayList<EarPhone> listOfCategory = new ArrayList<EarPhone>();
         
-        // 1. 만약 카테고리가 "ALL"로 들어오면? 고민할 필요 없이 우리가 미리 짜둔 전체 상품 메서드를 호출해 리턴합니다.
+        // 1. 카테고리가 "ALL"이면 전체 상품 조회 메서드로 위임
         if (category == null || category.equalsIgnoreCase("ALL")) {
             return getAllEarPhones(); 
         }
         
-        // 2. "WIRED"나 "WIRELESS"가 들어오면 DB에서 해당 카테고리 행들만 핀포인트로 조준 인출합니다.
+        // 2. "WIRED"나 "WIRELESS"면 해당 카테고리 행만 조회
         String sql = "SELECT * FROM dbo.earphone WHERE UPPER(category) = UPPER(?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         
         try {
-            conn = DBConnection.getConnection(); // 커넥션 개통
+            conn = DBConnection.getConnection();
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, category.trim());
             rs = pstmt.executeQuery();
@@ -225,10 +225,10 @@ public class EarPhoneRepository {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         
-        // 🎯 SQL의 LIKE 연산자를 이용해 앞뒤 어디든 검색어가 포함되면 다 긁어옵니다.
+        // LIKE 연산자로 부분 일치 검색
         String sql = "SELECT * FROM earphone WHERE pName LIKE ? OR pNameKn LIKE ? OR brand LIKE ? OR brandKn LIKE ?";        
         try {
-            conn = DBConnection.getConnection(); // 정석 커넥션 개통
+            conn = DBConnection.getConnection();
             pstmt = conn.prepareStatement(sql);
             
             // ? 자리에 %검색어% 형태로 바인딩 처리
@@ -251,7 +251,7 @@ public class EarPhoneRepository {
                 phone.setStock(rs.getInt("stock"));
                 phone.setBrandKn(rs.getString("brandKn"));
                 phone.setpNameKn(rs.getString("pNameKn"));
-                // 만약 DTO에 정의해 두신 다른 컬럼 세터가 있다면 이 밑에 추가해 주세요!
+                // 필요 시 다른 컬럼의 세터를 이 아래에 추가
                 
                 list.add(phone);
             }

@@ -8,7 +8,7 @@ public class DBConnection {
     public static Connection getConnection() {
         Connection conn = null;
         try {
-            // 1. 자바 21 환경에서 안전하게 MSSQL 드라이버 클래스 로드
+            // 1. MSSQL 드라이버 클래스 로드
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 			            
             // 2. 접속 정보 설정 (config.properties에서 로드)
@@ -16,7 +16,7 @@ public class DBConnection {
 			String user = ConfigLoader.get("db.user");
 			String password = ConfigLoader.get("db.password");
             
-            // 3. 통신망 연결
+            // 3. DB 연결
             conn = DriverManager.getConnection(url, user, password);
             
         }catch (ClassNotFoundException e) {

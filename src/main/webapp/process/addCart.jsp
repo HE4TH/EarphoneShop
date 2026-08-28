@@ -32,14 +32,12 @@
         return;
     }
 
-    // ==========================================================================
-    // 🚀 [대수술 구역] 세션 저장 방식을 폐기하고, SQL Server DB 영구 적재 가동!
-    // ==========================================================================
-    
-    // 🎯 [보안선] 현재 로그인한 유저의 아이디를 세션에서 꺼냅니다.
+    // 3. 세션 저장 방식에서 DB(cart 테이블) 저장 방식으로 전환
+
+    // 현재 로그인한 유저의 아이디를 세션에서 조회
     String sessionUserId = (String) session.getAttribute("userId");
-    
-    // 🚨 만약 로그인을 안 한 상태(비회원)에서 장바구니 담기를 누르면 로그인창으로 유도합니다.
+
+    // 비로그인 상태에서 장바구니 담기를 시도하면 로그인 페이지로 이동
     if (sessionUserId == null || sessionUserId.trim().isEmpty()) {
 %>
         <script>
@@ -47,8 +45,8 @@
             location.href = "../login.jsp";
         </script>
 <%
-        return; 
-    } // 🎯 자바의 if문 괄호를 자바 영역 안에서 안전하게 닫아줍니다!
+        return;
+    }
 %>
 <%
     Connection conn = null;
@@ -58,7 +56,7 @@
     ResultSet rsCheck = null;
 
     try {
-        // 🎯 [검증 쿼리] 이미 이 유저(mId)가 해당 상품(pId)을 장바구니 테이블에 담아놓았는지 체크
+        // 이미 이 유저(mId)가 해당 상품(pId)을 장바구니에 담아놓았는지 확인
         String sqlCheck = "SELECT cartId, pCount FROM cart WHERE mId = ? AND pId = ?";
 
         conn = util.DBConnection.getConnection();
@@ -69,7 +67,7 @@
         rsCheck = pstmtCheck.executeQuery();
         
         if (rsCheck.next()) {
-            // [시나리오 A] 이미 동일한 이어폰이 테이블에 존재한다면? 기존 수량에 누적 더하기!
+            // [시나리오 A] 이미 동일한 상품이 있으면 기존 수량에 더함
             int currentCount = rsCheck.getInt("pCount");
             String sqlUpdate = "UPDATE cart SET pCount = ? WHERE cartId = ?";
             
@@ -78,7 +76,7 @@
             pstmtUpdate.setInt(2, rsCheck.getInt("cartId"));
             pstmtUpdate.executeUpdate();
         } else {
-            // [시나리오 B] 장바구니 테이블에 없는 새로운 상품이라면? 새 행으로 인서트!
+            // [시나리오 B] 새로운 상품이면 새 행으로 삽입
             String sqlInsert = "INSERT INTO cart (mId, pId, pCount) VALUES (?, ?, ?)";
             
             pstmtInsert = conn.prepareStatement(sqlInsert);
@@ -88,9 +86,7 @@
             pstmtInsert.executeUpdate();
         }
         
-        // ==========================================================================
-        // 🧩 [실종됐던 구역 수리 복구 1] 현재 세션 주머니(cartList)도 DB 데이터와 실시간 싱크 동기화
-        // ==========================================================================
+        // 세션의 cartList도 DB 데이터와 동기화
         PreparedStatement pstmtCart = null;
         ResultSet rsCart = null;
         ArrayList<EarPhone> sessionCartList = new ArrayList<EarPhone>();
@@ -105,7 +101,7 @@
                 long dbPid = Long.parseLong(rsCart.getString("pId"));
                 int dbCount = rsCart.getInt("pCount");
                 
-                // 싱글톤 저장소에서 매칭되는 진짜 이어폰 상세 정보 호출
+                // 상품 저장소에서 상세 정보 조회
                 EarPhone dbGoods = repository.getEarPhoneById(dbPid);
                 if (dbGoods != null) {
                     EarPhone cartItem = new EarPhone();
@@ -121,7 +117,6 @@
                     sessionCartList.add(cartItem);
                 }
             }
-            // 최신화된 리스트를 세션 주머니에 강제 주입
             session.setAttribute("cartList", sessionCartList);
             
         } catch (Exception e) {
@@ -131,7 +126,7 @@
             if (pstmtCart != null) pstmtCart.close();
         }
 
-        // 4. 모든 처리가 깔끔하게 끝났으니 내 장바구니 화면(cart.jsp)으로 슛!
+        // 4. 처리 완료 후 장바구니 화면으로 이동
         response.sendRedirect("../cart.jsp");
 
     } catch (Exception e) {
@@ -143,7 +138,7 @@
         </script>
 <%
     } finally {
-        // 🧩 [실종됐던 구역 수리 복구 2] 자원 안전 해제 처리
+        // 자원 반납
         if (rsCheck != null) try { rsCheck.close(); } catch(SQLException e) {}
         if (pstmtCheck != null) try { pstmtCheck.close(); } catch(SQLException e) {}
         if (pstmtUpdate != null) try { pstmtUpdate.close(); } catch(SQLException e) {}

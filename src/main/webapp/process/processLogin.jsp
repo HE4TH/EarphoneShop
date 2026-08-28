@@ -5,13 +5,13 @@
 <%@ page import="dao.EarPhoneRepository" %>
 
 <%
-    // 1. 한글 깨짐 방지를 위한 캐릭터 인코딩 바인딩
+    // 1. 한글 인코딩 설정
     request.setCharacterEncoding("UTF-8");
 
     String mId = request.getParameter("mId");
     String passwd = request.getParameter("passwd");
-    
-    // 🎯 [핵심 추가] login.jsp의 hidden 상자가 배달해준 유저의 원래 고향 주소 접수!
+
+    // login.jsp의 hidden 필드로 전달된 로그인 직전 페이지 주소
     String prevPage = request.getParameter("prevPage");
     if (prevPage == null || prevPage.trim().isEmpty()) {
         prevPage = "../main.jsp";
@@ -28,7 +28,6 @@
     try {
         conn = util.DBConnection.getConnection();
         
-        /* 🎯 [로그인 정밀 매칭 쿼리] */
         String sql = "SELECT mName FROM member WHERE mId = ? AND passwd = ?";
         
         pstmt = conn.prepareStatement(sql);
@@ -37,9 +36,8 @@
         
         rs = pstmt.executeQuery();
         
-        // 3. 🧭 인증 결과 분기 시나리오 가동
+        // 3. 인증 결과 처리
         if (rs.next()) {
-            // 🔓 로그인 성공 플래그 세팅
             isLoginSuccess = true;
             String mName = rs.getString("mName");
             
@@ -52,9 +50,7 @@
                 isAdmin = true;
             }
             
-            // ==========================================================================
-            // 🎯 [수리 완공] 세션에 장바구니 데이터 복원 로직 시작 (자바 로직 먼저 완공)
-            // ==========================================================================
+            // 세션에 장바구니 데이터 복원
             PreparedStatement pstmtCart = null;
             ResultSet rsCart = null;
             
@@ -62,7 +58,7 @@
             EarPhoneRepository repository = EarPhoneRepository.getInstance();
             
             try {
-                // SQL Server에 저장된 이 회원(mId)의 영구 장바구니 데이터 인출
+                // 이 회원(mId)의 DB 장바구니 데이터 조회
                 String sqlCart = "SELECT pId, pCount FROM cart WHERE mId = ? ORDER BY cartId DESC";
                 pstmtCart = conn.prepareStatement(sqlCart);
                 pstmtCart.setString(1, mId.trim());
@@ -72,7 +68,6 @@
                     long dbPid = Long.parseLong(rsCart.getString("pId"));
                     int dbCount = rsCart.getInt("pCount");
                     
-                    // 싱글톤 저장소에서 고유 ID로 원본 이어폰 스펙 인출
                     EarPhone dbGoods = repository.getEarPhoneById(dbPid);
                     
                     if (dbGoods != null) {
@@ -84,13 +79,12 @@
                         cartItem.setBrand(dbGoods.getBrand());
                         cartItem.setpImage(dbGoods.getpImage());
                         cartItem.setCategory(dbGoods.getCategory());
-                        cartItem.setStock(dbCount); // DB 누적 수량 주입
+                        cartItem.setStock(dbCount); // DB 누적 수량
                         
                         dbCartList.add(cartItem);
                     }
                 }
                 
-                // 무결한 DTO 리스트를 세션 'cartList'에 저장
                 if (!dbCartList.isEmpty()) {
                     session.setAttribute("cartList", dbCartList);
                 }
@@ -101,10 +95,9 @@
                 if (rsCart != null) try { rsCart.close(); } catch(Exception e) {}
                 if (pstmtCart != null) try { pstmtCart.close(); } catch(Exception e) {}
             }
-            // ==========================================================================
-        } 
-        
-        // 4. 🧭 자바 로직 처리가 완벽히 끝난 후 최종 화면 리다이렉트 분기
+        }
+
+        // 4. 로그인 결과에 따른 화면 리다이렉트
         if (isLoginSuccess) {
             if (isAdmin) {
 %>
@@ -139,7 +132,7 @@
         </script>
 <%
     } finally {
-        // 안전하게 파이프라인 자원 폐쇄
+        // 자원 반납
         if (rs != null) try { rs.close(); } catch(SQLException e) {}
         if (pstmt != null) try { pstmt.close(); } catch(SQLException e) {}
         if (conn != null) try { conn.close(); } catch(SQLException e) {}

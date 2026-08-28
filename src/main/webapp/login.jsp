@@ -1,9 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
-    // 🎯 메인 메뉴바가 던져준 "직전 페이지 주소"를 가로챕니다.
+    // 메뉴바에서 전달된 "직전 페이지 주소" 조회
     String prevPage = request.getParameter("prevPage");
     if (prevPage == null) {
-        prevPage = "main.jsp"; // 혹시나 주소가 안 넘어왔다면 기본 메인페이지로 백업 설정
+        prevPage = "main.jsp";
     }
     String checkSessionId = (String) session.getAttribute("userId");
     if (checkSessionId != null && !checkSessionId.trim().isEmpty()) {
@@ -14,7 +14,7 @@
 </script>
 
 <%
-    return; // ❌ 밑에 있는 로그인 폼 HTML 코드를 톰캣이 읽지 못하도록 강제 종료!
+    return; // 이미 로그인된 경우 아래 로그인 폼 렌더링 중단
 }
 %>
 

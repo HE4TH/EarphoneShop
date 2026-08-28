@@ -129,7 +129,7 @@
                         <input type="text" id="phone3" maxlength="4" placeholder="0000" required oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                     </div>
                     
-                    <!-- 📢 [히든 필드] 서버(processJoin.jsp)로 날아갈 때는 예전 규격인 "010-1234-5678"로 이쁘게 조립해서 발사! -->
+                    <!-- 히든 필드: 서버(processJoin.jsp)로는 "010-1234-5678" 형식으로 조립해서 전송 -->
                     <input type="hidden" id="phone" name="phone">
                 </div>
 
@@ -159,7 +159,7 @@
         // [글로벌 변수] 아이디 중복확인 인증 여부 기록 스위치
         let isIdChecked = false;
 
-        // 1. 🎯 [아이디 실시간 중복검사 엔진 (Fetch API)]
+        // 1. 아이디 실시간 중복검사 (Fetch API)
         function checkDuplicateId() {
             const mIdInput = document.getElementById('mId');
             const mId = mIdInput.value.trim();
@@ -204,7 +204,7 @@
             document.getElementById('idCheckMsg').style.display = 'none';
         });
         
-        // 2. 🎯 [이메일 도메인 선택 상자 변환 스위치]
+        // 2. 이메일 도메인 선택 상자 처리
         function changeEmailDomain(selectObj) {
             const domainInput = document.getElementById('emailDomain');
             if (selectObj.value === "") {
@@ -219,9 +219,9 @@
             }
         }
 
-        // 3. 🎯 [DOM 로드 완료 시 생년월일 세팅 및 연락처 자동 포커스 이동 트리거]
+        // 3. DOM 로드 완료 시 생년월일 옵션 생성 및 연락처 자동 포커스 이동 설정
         window.addEventListener('DOMContentLoaded', () => {
-            // [3-1] 생년월일 자동 숫자 옵션 주입
+            // [3-1] 생년월일 옵션 생성
             const yearSelect = document.getElementById('birthYear');
             const monthSelect = document.getElementById('birthMonth');
             const daySelect = document.getElementById('birthDay');
@@ -239,7 +239,7 @@
                 daySelect.add(new Option(d + "일", dStr));
             }
 
-            // [3-2] 연락처 가운데 4자리 치면 끝자리로 포커스 자동 배달
+            // [3-2] 연락처 가운데 4자리 입력 완료 시 마지막 칸으로 포커스 이동
             const phone2 = document.getElementById('phone2');
             const phone3 = document.getElementById('phone3');
             if (phone2 && phone3) {
@@ -251,12 +251,12 @@
             }
         });
 
-        // 4. 🎯 [대망의 가입하기 최종 통합 검증 제어판]
+        // 4. 가입하기 최종 통합 검증
         function validateJoinForm() {
             const mId = document.getElementById('mId').value.trim();
             const passwd = document.getElementById('passwd').value.trim();
 
-            // [A] 기본 길이 방어선 검사
+            // [A] 기본 길이 검사
             if (mId.length < 4 || mId.length > 12) {
                 alert("아이디는 4자 이상 12자 이하로 입력해 주세요.");
                 return false;
@@ -272,7 +272,7 @@
                 return false;
             }
             
-            // [C] 생년월일 삼형제 결합 및 바인딩 (YYYY/MM/DD)
+            // [C] 생년월일 결합 및 바인딩 (YYYY/MM/DD)
             const year = document.getElementById('birthYear').value;
             const month = document.getElementById('birthMonth').value;
             const day = document.getElementById('birthDay').value;
@@ -303,8 +303,8 @@
             }
             document.getElementById('phone').value = p1 + "-" + p2 + "-" + p3;
             
-            // 모든 락(Lock)이 해제되었으므로 백엔드(processJoin.jsp)로 데이터 정식 출격!
-            return true; 
+            // 모든 검증 통과, 백엔드(processJoin.jsp)로 데이터 전송
+            return true;
         }
     </script>
     
@@ -349,7 +349,7 @@
                         document.getElementById("sample6_extraAddress").value = '';
                     }
 
-                    // 🎯 카카오가 찾아준 우편번호와 주소 정보를 우리 인풋창에 자석처럼 쏙 고정!
+                    // 검색된 우편번호와 주소를 입력창에 반영
                     document.getElementById('sample6_postcode').value = data.zonecode;
                     document.getElementById("sample6_address").value = addr;
                     

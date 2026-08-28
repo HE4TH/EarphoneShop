@@ -16,7 +16,7 @@
 	<jsp:include page="include/menu.jsp" />
 	
 	<%
-	    // 1. 주소창에서 카테고리와 정렬 파라미터를 가로챕니다.
+	    // 1. 카테고리와 정렬 파라미터 수신
 	    String category = request.getParameter("category");
 	    String sort = request.getParameter("sort");
 	
@@ -25,15 +25,15 @@
 	        category = "ALL";
 	    }
 	    
-	    // 🎯 [정렬 기본값 추가] 주소창에 sort 파라미터가 없으면 '최신등록순(latest)'을 기본값으로 지정
+	    // sort 파라미터가 없으면 '최신등록순(latest)'을 기본값으로 지정
 	    if (sort == null || sort.trim().isEmpty()) {
 	        sort = "latest";
 	    }
 	    
-	    // 2. 🗄️ Repository 가동
+	    // 2. Repository를 통해 상품 목록 조회
 	    ArrayList<EarPhone> list = EarPhoneRepository.getInstance().getProductsByCategory(category);
 	    
-	    // 🎯 [백엔드 정렬 가드] DB에서 가져온 자바 ArrayList를 사용자가 선택한 기준에 맞게 실시간 램(RAM) 정렬 처리!
+	    // DB에서 가져온 목록을 사용자가 선택한 기준에 맞게 정렬
 	    if (list != null && !list.isEmpty()) {
 	        if (sort.equals("price_low")) {
 	            // 낮은 가격순 정렬 (오름차순)
@@ -53,12 +53,12 @@
 	            });
 	        } else if (sort.equals("review")) {
 	            // 리뷰 많은순 정렬 (내림차순)
-	            // 💡 만약 DTO에 getReviewCount() 혹은 getReview() 메서드가 있다면 그걸 매칭하시면 됩니다.
-	            // 현재는 임시로 상품 ID 역순이나 기존 정렬을 유지하도록 방어선을 쳐둡니다.
+	            // TODO: DTO에 getReviewCount()가 추가되면 해당 메서드로 교체
+	            // 현재는 상품 ID 역순으로 임시 대체
 	            Collections.sort(list, new Comparator<EarPhone>() {
 	                @Override
 	                public int compare(EarPhone e1, EarPhone e2) {
-	                    // DTO에 리뷰 개수 컬럼이 있다면 e2.getReviewCount() - e1.getReviewCount() 형태로 교체하세요!
+	                    // DTO에 리뷰 개수 컬럼이 추가되면 e2.getReviewCount() - e1.getReviewCount()로 교체
 	                    return Long.compare(e2.getProductId(), e1.getProductId()); 
 	                }
 	            });
@@ -124,7 +124,7 @@
    	
 		<%
 		        }
-		    } // 반복문 끝!
+		    }
 		%>
 	
 	</div>

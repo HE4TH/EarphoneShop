@@ -114,7 +114,7 @@
 								</td>
 							</tr>
 							<%
-                                    } // for문 끝
+                                    }
                                 %>
 						</tbody>
 					</table>
@@ -144,23 +144,22 @@
 			</div>
 		</form>
 		<%
-            } // else문 끝
+            }
         %>
 	</div>
 
 	<script>
-        // 🎯 [스크롤 복원 엔진] 페이지가 새로고침되어 켜지는 순간 자동으로 실행되는 함수
+        // 페이지 로드 시 이전 스크롤 위치 복원
         window.addEventListener('DOMContentLoaded', () => {
             const savedScrollTop = sessionStorage.getItem('cartScrollPos');
             if (savedScrollTop) {
                 window.scrollTo(0, parseInt(savedScrollTop, 10));
                 sessionStorage.removeItem('cartScrollPos');
             }
-            // 첫 화면 밸런싱용 금액 계산기 가동
             updateReceiptAmount();
         });
 
-        // 수량 조절 실시간 변경 발사 함수
+        // 수량 변경 처리
         function updateCartQty(productId, newQty) {
             if (newQty < 1) { 
                 alert("최소 주문 수량은 1개입니다."); 
@@ -170,7 +169,7 @@
             location.href = "process/updateCart.jsp?productId=" + productId + "&quantity=" + newQty;
         }
 
-        // 전체선택 콤보 제어
+        // 전체선택 체크박스 제어
         function toggleAllCheckboxes(master) {
         	const checkboxes = document.querySelectorAll('.cart-item-checkbox');
             checkboxes.forEach(cb => {
@@ -196,14 +195,14 @@
 		        }
 		    }
 		    
-		    // 2. 전체 상품 주문 분기 -> 모든 체크박스를 강제로 활성화해서 통째로 밀어 넘깁니다.
+		    // 2. 전체 상품 주문 분기: 모든 체크박스를 활성화
 		    if (actionType === 'orderAll') {
 		        checkboxes.forEach(cb => {
 		            cb.checked = true;
 		        });
 		    }
 		    
-		    // 3. 선택 삭제 분기 처리 (기존에 스위칭 설계해두신 예외 처리선)
+		    // 3. 선택 삭제 분기 처리
 		    if (actionType === 'delete') {
 		        const form = document.getElementById('cartForm');
 		        if(form) {
@@ -213,7 +212,7 @@
 		        }
 		    }
 		
-		    // 4. 주문 시스템 출격 처리 (정확하게 아이디 기준 cartForm을 낚아챕니다)
+		    // 4. 주문 처리 (id로 cartForm을 찾아 제출)
 		    const form = document.getElementById('cartForm'); 
 		    if (form) {
 		        form.action = "order.jsp";
@@ -222,7 +221,7 @@
 		    }
 		}
         
-        // 사용자가 화면을 스크롤할 때마다 탑버튼 노출을 실시간 감시하는 엔진
+        // 스크롤 위치에 따라 맨 위로 버튼 표시 여부 제어
         window.addEventListener('scroll', () => {
             const topBtn = document.getElementById('scrollTopBtn');
             if (topBtn) {
@@ -234,7 +233,7 @@
             }
         });
 
-        // 탑버튼 스무스 복귀 함수
+        // 맨 위로 스크롤 이동
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
@@ -242,7 +241,7 @@
             });
         }
         
-        // 🎯 실시간 영수증 금액 합산 정산 가동기
+        // 선택된 상품의 금액 합산
         function updateReceiptAmount() {
             const checkboxes = document.querySelectorAll('.cart-item-checkbox');
             let dynamicTotal = 0;

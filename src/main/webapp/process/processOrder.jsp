@@ -5,7 +5,7 @@
 <%@ page import="dao.EarPhoneRepository" %>
 
 <%
-    // 1. 한글 깨짐 방지 및 로그인 세션 검증
+    // 1. 한글 인코딩 설정 및 로그인 세션 검증
     request.setCharacterEncoding("UTF-8");
     String sessionUserId = (String) session.getAttribute("userId");
     
@@ -19,7 +19,7 @@
         return;
     }
 
-    // 2. order.jsp가 던진 배송지 파라미터 낚아채기
+    // 2. order.jsp에서 전달된 배송지 파라미터 수신
     String orderName = request.getParameter("orderName");
     String orderPhone = request.getParameter("orderPhone");
     String orderMail = request.getParameter("orderMail");
@@ -27,8 +27,8 @@
     String address = request.getParameter("address");
     String addressDetail = request.getParameter("addressDetail");
 
-    // 3. 결제할 장바구니 리스트 가져오기 (실제 결제 대상)
-    // (만약 order.jsp에서 필터링된 cartList를 세션에 따로 담지 않았다면 기본 cartList를 사용합니다)
+    // 3. 결제할 장바구니 리스트 조회
+    // (order.jsp에서 필터링된 cartList를 세션에 따로 담지 않았다면 기본 cartList 사용)
     ArrayList<EarPhone> cartList = (ArrayList<EarPhone>) session.getAttribute("cartList");
     
     if (cartList == null || cartList.isEmpty()) {
@@ -41,7 +41,7 @@
         return;
     }
 
-    // 4. 총 결제 금액 계산 및 실시간 재고 검증 루프
+    // 4. 총 결제 금액 계산
     int totalPrice = 0;
     EarPhoneRepository repository = EarPhoneRepository.getInstance();
     
@@ -57,7 +57,7 @@
     try {
         conn = util.DBConnection.getConnection();
         
-        // 🎯 [미션 1] dbo.orders 테이블에 주문 마스터 내역 영구 박제
+        // (1) dbo.orders 테이블에 주문 내역 저장
         String sql = "INSERT INTO dbo.orders (mId, orderName, orderPhone, orderMail, zipCode, address, addressDetail, totalPrice) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         pstmt = conn.prepareStatement(sql);
@@ -73,12 +73,12 @@
         int rows = pstmt.executeUpdate();
         
         if (rows > 0) {
-            // 🎯 [미션 2] 상품별 실시간 DB 재고 차감 가동!
+            // (2) 상품별 DB 재고 차감
             for (EarPhone item : cartList) {
                 repository.updateStock(item.getStock(), item.getProductId());
             }
-            
-            // 🎯 [미션 3] 커넥션이 완벽히 살아있는 이 안전 구역 안에서 장바구니 DELETE 집행!
+
+            // (3) 같은 커넥션 안에서 장바구니 삭제
             String sqlDel = "DELETE FROM dbo.cart WHERE TRIM(mId) = ?";
             pstmtDel = conn.prepareStatement(sqlDel);
             pstmtDel.setString(1, sessionUserId.trim());
@@ -90,18 +90,17 @@
     } catch (Exception e) {
         e.printStackTrace();
     } finally {
-        // 🧼 자원 반납은 모든 쿼리가 완전히 멈춘 이 '최종 피날레' 구역에서 역순으로 단 한 번만 안전하게 실행합니다!
+        // 자원 반납
         if (pstmtDel != null) try { pstmtDel.close(); } catch(Exception e) {}
         if (pstmt != null) try { pstmt.close(); } catch(Exception e) {}
         if (conn != null) try { conn.close(); } catch(Exception e) {}
     }
 
- // 5. 후처리 분기 가동
+ // 5. 결과에 따른 후처리
     if (isOrderSuccess) {
-        // 세션 장바구니 메모리 청소 [cite: 521]
-        session.removeAttribute("cartList"); 
-        
-        // 금액과 이름을 들고 명세서 페이지로 안전하게 출격! [cite: 522]
+        session.removeAttribute("cartList");
+
+        // 주문 완료 페이지로 이동
         response.sendRedirect("../orderConfirmed.jsp?orderName=" + java.net.URLEncoder.encode(orderName, "UTF-8") + "&totalPrice=" + totalPrice);
     } else {
 %>

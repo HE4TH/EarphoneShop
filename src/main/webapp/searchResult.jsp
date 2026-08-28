@@ -16,7 +16,7 @@
     <jsp:include page="include/menu.jsp" />
     
     <%
-        // 2. 상단 검색창에서 보내온 input 값(name="searchKeyword")을 잡아챕니다.
+        // 2. 검색창 input 값(name="searchKeyword") 수신
         request.setCharacterEncoding("UTF-8");
 
 	    String keyword = request.getParameter("searchKeyword");
@@ -66,7 +66,7 @@
         <%
                 }
             } else {
-                // 4. 검색 결과가 한 개도 없을 때 띄워줄 허전함 방지 예외창
+                // 4. 검색 결과가 없을 때 안내 메시지 표시
         %>
             <div class="detail-section-placeholder" style="width: 100%; margin: 50px auto;">
                 <h3>🔍 검색 결과가 없습니다.</h3>

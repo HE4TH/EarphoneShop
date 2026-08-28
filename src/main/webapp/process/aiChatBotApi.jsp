@@ -28,10 +28,10 @@
             }
         }
 
-        // (2) 💥 조건문 필터를 완전 제거하고, 챗봇이 가동되면 무조건 DB부터 안전하게 긁어옵니다!
-        ArrayList<EarPhone> allProducts = repo.getAllEarPhones(); 
-        
-        // 🚨 톰캣 콘솔창에 진짜로 DB 어레이리스트가 넘어오는지 감시 카메라 가동
+        // (2) 조건 없이 챗봇 호출 시마다 전체 상품 목록을 DB에서 조회
+        ArrayList<EarPhone> allProducts = repo.getAllEarPhones();
+
+        // 디버깅용 로그: DB에서 정상적으로 목록을 받아왔는지 확인
         System.out.println("=== [AI 엔진 콘솔] DB에서 넘겨받은 객체 상태: " + allProducts);
         if(allProducts != null) {
             System.out.println("=== [AI 엔진 콘솔] 읽어온 리스트의 순수 데이터 개수: " + allProducts.size() + "개 ===");
@@ -47,7 +47,6 @@
                     continue; 
                 }
                 
-                // 🚨 1번 포인트: 여기서 혹시 에러가 나서 튕기는지 감시
                 recommendBuilder.append(count == 1 ? "" : ", ")
                                 .append("{브랜드: ").append(p.getBrand())
                                 .append(", 제품명: ").append(p.getpName()) 
@@ -58,14 +57,14 @@
             System.out.println("=== [AI 엔진 콘솔] 최종 조립 성공한 프롬프트 문맥: " + databaseRecommendationContext);
         }
     } catch(Exception e) {
-        // 🚨 [가장 중요] 그동안 숨어있던 빨간책 에러 원인을 이클립스 콘솔창에 붉은 글씨로 통째로 다 뿜어내게 만듭니다!
-        System.out.println("❌❌❌ [AI 핵심 비상] 자바 로직 구동 중 크래시 발생! 원인 아래 확인 ❌❌❌");
+        // 예외 발생 시 스택 트레이스를 콘솔에 출력해 원인 확인
+        System.out.println("[AI 챗봇] 상품 정보 조회 중 예외 발생");
         e.printStackTrace(); 
         prodInfoContext = "";
         databaseRecommendationContext = "";
     }
 
-    // 3. 🧠 글로벌 표준 배열 구조용 세션 빌더 가동
+    // 3. 상품별 대화 이력을 세션에 배열 형태로 저장
     String chatHistoryKey = "mistral_chat_history_" + productId;
     ArrayList<String> messagesList = (ArrayList<String>) session.getAttribute(chatHistoryKey);
     
@@ -84,11 +83,11 @@
         messagesList.add("{\"role\": \"system\", \"content\": \"" + cleanSysPrompt + "\"}");
     }
 
-    // 🎯 [완치 포인트 1] 유저의 신규 질문 문장도 항상 리스트에 정상 적치되도록 수정
+    // 사용자의 신규 질문을 대화 이력 리스트에 추가
     String cleanUserMsg = userMessage.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
     messagesList.add("{\"role\": \"user\", \"content\": \"" + cleanUserMsg + "\"}");
 
-    // 4. 🎯 Mistral AI 공식 엔드포인트 및 API 키 세팅 (config.properties에서 로드)
+    // 4. Mistral AI 엔드포인트 및 API 키 설정 (config.properties에서 로드)
     String apiKey = util.ConfigLoader.get("mistral.api.key");
     String apiURL = "https://api.mistral.ai/v1/chat/completions";
 
@@ -134,7 +133,7 @@
 
             String rawJson = responseSB.toString();
             
-            // 🎯 [Mistral 표준 파싱 구역]
+            // Mistral 응답 JSON에서 content 값 파싱
             if (rawJson.contains("\"content\":\"")) {
                 int startIdx = rawJson.indexOf("\"content\":\"") + 11;
                 
