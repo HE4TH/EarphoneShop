@@ -21,7 +21,6 @@
         return;
     }
 
-    // 🎯 String 타입을 승민님이 설계하신 진짜 long 자료형으로 변환합니다.
     long productId = Long.parseLong(productIdStr.trim());
 
     // 2. 상품이 실제로 존재하는지 1차 검증

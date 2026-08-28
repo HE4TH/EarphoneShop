@@ -69,7 +69,6 @@ public class EarPhoneRepository {
             rs = pstmt.executeQuery();
             
             while (rs.next()) {
-                // 승민님이 밑에 정성껏 빚어두신 헬퍼 매퍼를 호출해 DTO 조립 후 바구니에 수집!
                 listOfCategory.add(mapResultSetToEarPhone(rs));
             }
         } catch (Exception e) {

@@ -20,7 +20,6 @@
     try {
         conn = util.DBConnection.getConnection();
 
-        // 🎯 [완치] 승민님의 진짜 테이블 명(dbo.earphone)과 진짜 PK 컬럼명(productId)으로 조준 타격!
         String sql = "DELETE FROM dbo.earphone WHERE productId = ?";
         
         pstmt = conn.prepareStatement(sql);

@@ -207,7 +207,7 @@
 		    if (actionType === 'delete') {
 		        const form = document.getElementById('cartForm');
 		        if(form) {
-		            form.action = "process/deleteSelectedCart.jsp"; // 승민님의 선택삭제용 백엔드 타격
+		            form.action = "process/deleteSelectedCart.jsp";
 		            form.submit();
 		            return;
 		        }

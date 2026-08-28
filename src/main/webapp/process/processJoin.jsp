@@ -33,8 +33,6 @@
     try {
         conn = util.DBConnection.getConnection();
         
-        /* 🎯 [정석 프리페어드 인서트 쿼리문 빌드]
-           - 승민님이 커스텀하신 카멜케이스 컬럼 규격을 100% 반영했습니다. */
         String sql = "INSERT INTO member (mId, passwd, mName, gender, birth, mail, phone, address, regist_day, zipCode, addressDetail) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         

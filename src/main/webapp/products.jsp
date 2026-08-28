@@ -30,10 +30,7 @@
 	        sort = "latest";
 	    }
 	    
-	    // 2. 🗄️ Repository 가동 
-	    // 승민님의 구현 방식에 따라, 만약 Repository에서 정렬까지 처리하는 메서드를 따로 만드셨다면 
-	    // 아래를 repo.getProductsByCategoryAndSort(category, sort); 형태로 바인딩하셔도 됩니다.
-	    // 우선은 기존 카테고리 인출 리스트를 기반으로 동작하게 둡니다.
+	    // 2. 🗄️ Repository 가동
 	    ArrayList<EarPhone> list = EarPhoneRepository.getInstance().getProductsByCategory(category);
 	    
 	    // 🎯 [백엔드 정렬 가드] DB에서 가져온 자바 ArrayList를 사용자가 선택한 기준에 맞게 실시간 램(RAM) 정렬 처리!

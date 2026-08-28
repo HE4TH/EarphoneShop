@@ -5,7 +5,7 @@
 %>
 <script>
     alert("이미 로그인된 상태입니다.");
-    location.href = "main.jsp"; // 🚀 승민님의 메인 화면 파일명으로 매핑!
+    location.href = "main.jsp";
 </script>
 
 <%

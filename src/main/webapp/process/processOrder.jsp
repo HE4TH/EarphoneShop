@@ -45,7 +45,6 @@
     int totalPrice = 0;
     EarPhoneRepository repository = EarPhoneRepository.getInstance();
     
-    // [검증 가동] 결제 전 재고가 충분한지 승민님의 updateStock 로직을 빌려 미리 눈대중 체크합니다.
     for (EarPhone item : cartList) {
         totalPrice += (item.getPrice() * item.getStock());
     }

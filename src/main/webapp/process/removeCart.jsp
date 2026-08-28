@@ -13,7 +13,6 @@
         return;
     }
 
-    // 2. 🎯 [승민님 스펙 맞춤형 파싱] String 주소 데이터를 진짜 long형 숫자로 변환합니다.
     long productId = Long.parseLong(productIdStr.trim());
 
     // 3. 서버 세션 사물함에 들어있는 유저의 장바구니 바구니(cartList)를 인출합니다.
