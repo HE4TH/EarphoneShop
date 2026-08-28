@@ -1,0 +1,18 @@
+# Eclipse project metadata
+.settings/
+.classpath
+.project
+
+# Build output
+build/
+target/
+
+# External libraries (WEB-INF/lib jars)
+src/main/webapp/WEB-INF/lib/
+
+# Local secrets (DB 접속정보, API 키) - config.properties.example 참고
+src/main/java/config.properties
+
+# OS / editor
+.DS_Store
+Thumbs.db

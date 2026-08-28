@@ -1,0 +1,7 @@
+db.url=jdbc:sqlserver://localhost:1433;databaseName=earphone_shop;encrypt=true;trustServerCertificate=true;loginTimeout=30;
+db.user=YOUR_DB_USER
+db.password=YOUR_DB_PASSWORD
+
+mistral.api.key=YOUR_MISTRAL_API_KEY
+
+gemini.api.key=YOUR_GEMINI_API_KEY

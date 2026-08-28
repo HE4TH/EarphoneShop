@@ -1,0 +1,465 @@
+@charset "UTF-8";
+
+.member-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    background-color: #ffffff;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: calc(100vh - 160px) !important;
+}
+
+.member-card {
+    width: 100%;
+    max-width: 460px;
+    background-color: #f8fafc;
+    border-radius: 16px;
+    padding: 40px 35px;
+    box-sizing: border-box;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+}
+
+.member-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.member-header h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.member-header p {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+    width: 100%;
+}
+
+.input-group label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    padding-left: 2px;
+}
+
+.input-group input[type="text"],
+.input-group input[type="password"],
+.input-group input[type="email"],
+.input-group input[type="tel"] {
+    width: 100%;
+    height: 46px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    font-size: 14px;
+    color: #0f172a;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px !important;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15) !important;
+}
+
+.id-check-zone {
+    display: flex !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+.btn-check-id {
+    height: 46px !important;
+    padding: 0 16px !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease;
+    white-space: nowrap !important;
+}
+
+.btn-check-id:hover {
+    background-color: #334155 !important;
+}
+
+.id-check-msg {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    margin: 4px 0 0 2px !important;
+    display: none;
+}
+
+.id-check-msg.success { display: block !important; color: #007bff !important; }
+.id-check-msg.error { display: block !important; color: #ef4444 !important; }
+
+.birth-select-zone {
+    display: flex !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+.birth-select-zone select {
+    flex: 1 !important;
+    height: 46px !important;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    font-size: 14px !important;
+    color: #0f172a !important;
+    cursor: pointer !important;
+    outline: none !important;
+    transition: border-color 0.2s ease;
+}
+
+.birth-select-zone select:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15) !important;
+}
+
+.gender-radio-group {
+    display: flex;
+    gap: 20px;
+    padding: 4px 2px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #475569;
+}
+
+.radio-label input[type="radio"] {
+    accent-color: #007bff;
+    width: 16px;
+    height: 16px;
+}
+
+.email-input-zone {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+}
+
+#emailId { flex: 1.2 !important; }
+#emailDomain { flex: 1.5 !important; }
+
+.email-at {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #94a3b8 !important;
+    padding: 0 2px;
+}
+
+#emailSelect {
+    flex: 1.3 !important;
+    height: 46px !important;
+    padding: 0 8px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    cursor: pointer !important;
+    outline: none !important;
+    transition: border-color 0.2s ease;
+}
+
+#emailSelect:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15) !important;
+}
+
+.phone-input-zone {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#phone1 {
+    width: 85px !important;
+    flex: none !important;
+    height: 46px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    font-size: 14px !important;
+    color: #0f172a !important;
+    cursor: pointer !important;
+    outline: none !important;
+    margin: 0 !important;
+}
+
+#phone2, #phone3 {
+    width: 90px !important;
+    flex: none !important;
+    height: 46px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    font-size: 14px !important;
+    color: #0f172a !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.phone-dash {
+    font-size: 25px !important;
+    font-weight: 1000 !important;
+    color: #94a3b8 !important;
+    padding: 0 4px !important;
+    line-height: 46px !important;
+}
+
+.address-zip-zone {
+    display: flex !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-bottom: 6px;
+}
+
+#sample6_postcode {
+    width: 120px !important;
+    flex: none !important;
+    background-color: #f1f5f9 !important;
+}
+
+.btn-search-address {
+    height: 46px !important;
+    padding: 0 16px !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease;
+}
+
+.btn-search-address:hover {
+    background-color: #334155 !important;
+}
+
+#sample6_address {
+    background-color: #f1f5f9 !important;
+    margin-bottom: 6px;
+}
+
+.member-action-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 28px;
+    width: 100%;
+}
+
+#loginForm .member-action-zone {
+    margin-top: 32px !important;
+}
+
+.btn-submit-member {
+    width: 100%;
+    height: 50px;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-submit-member:hover {
+    background-color: #1e293b !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25) !important;
+}
+
+.btn-link-login {
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    text-decoration: none;
+    padding: 4px 0;
+    transition: color 0.2s ease;
+}
+
+.btn-link-login:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+/* 회원가입 성공 블러 모달 레이어 */
+.join-modal-overlay {
+    position: fixed !important;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.join-modal-overlay.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.join-modal-card {
+    background-color: #ffffff !important;
+    width: 100%;
+    max-width: 380px;
+    border-radius: 16px !important;
+    padding: 35px 30px !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(20px) scale(0.8);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.join-modal-overlay.active .join-modal-card {
+    transform: translateY(0) scale(1) !important;
+}
+
+.modal-icon-zone {
+    color: #007bff !important;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: center;
+}
+
+.join-modal-card h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.join-modal-card p {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.btn-close-modal {
+    width: 100% !important;
+    height: 46px !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+    transition: background 0.2s ease;
+}
+
+.btn-close-modal:hover {
+    background-color: #1e293b !important;
+}
+
+/* ==========================================================================
+   [추가] 최종 결제 페이지(order.jsp) 프리미엄 명세서 스타일 보정
+   ========================================================================== */
+.order-summary-zone {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.order-sub-title {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin-bottom: 16px !important;
+    letter-spacing: -0.3px;
+    text-align: left;
+}
+
+/* 영수증 미니 테이블 레이아웃 정렬 */
+.order-mini-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 14px !important;
+    margin-bottom: 10px;
+}
+
+.order-mini-table th {
+    color: #64748b !important;
+    font-weight: 600 !important;
+    padding: 10px 0 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    text-align: left;
+}
+
+.order-mini-table td {
+    padding: 14px 0 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    color: #334155;
+    text-align: left;
+}
+
+/* 최종 금액 가로줄 핏 매핑 */
+.order-total-row td {
+    border-bottom: none !important;
+    padding-top: 20px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+}
+
+/* 주소 검색창 레이아웃 가드 */
+.order-summary-zone + form .address-zip-zone {
+    display: flex !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-bottom: 8px;
+}
+
+.order-summary-zone + form input[type="text"] {
+    margin-bottom: 8px;
+}

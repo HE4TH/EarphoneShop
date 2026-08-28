@@ -1,0 +1,66 @@
+@charset "UTF-8";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    text-align: center;
+}
+
+.container h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #111111;
+    margin-bottom: 40px;
+    letter-spacing: -1px;
+}
+
+.main-hero-icon {
+    width: 80px !important;
+    height: 80px !important;
+    fill: none;
+    stroke: #0f172a;
+    stroke-width: 2.5 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    margin-bottom: 1px !important;
+    animation: heroIconFade 0.8s ease-out;
+}
+
+@keyframes heroIconFade {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.button-group {
+    display: flex;
+    gap: 25px;
+}
+
+.button-group a {
+    display: inline-block;
+    width: 180px;
+    padding: 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    background-color: #222222;
+    color: #ffffff;
+}
+
+.button-group a:hover {
+    background-color: #007bff;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+}

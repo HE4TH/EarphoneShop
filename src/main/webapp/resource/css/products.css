@@ -1,0 +1,158 @@
+@charset "UTF-8";
+
+/* 타이틀 10px 올리고 필터바 하단선 밀착 수평 매핑 */
+.product-list-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    max-width: 1240px;
+    margin: 40px auto 0 auto !important;
+    padding: 0 20px 6px 20px !important;
+    border-bottom: 2px solid #1e293b !important;
+    box-sizing: border-box;
+}
+
+.product-list-header .list-title {
+    margin: 0 !important;
+    padding: 0 0 10px 0 !important; 
+    font-size: 28px;
+    font-weight: bold;
+    color: #111111;
+    letter-spacing: -0.5px;
+    line-height: 1.2 !important;
+}
+
+.sort-filter-group {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 0 2px 0 !important;
+    font-size: 11px;
+}
+
+.sort-item {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s ease;
+}
+
+.sort-item:hover {
+    color: #1e293b;
+}
+
+.sort-item.active {
+    color: #b92c2c;
+    font-weight: 700;
+}
+
+.sort-divider {
+    color: #cbd5e1;
+    margin: 0 10px;
+    font-size: 11px;
+}
+
+/* 🎯 [완치] 상품 배치용 정석 그리드 바구니 (정중앙 핏 마스터) */
+.products-container {
+    max-width: 1240px;
+    margin: 30px auto; /* 上下 30px, 左右 auto로 정중앙 배치 */
+    padding: 0 20px; /* 양옆 화면 여백 안전 가드 */
+    box-sizing: border-box;
+    text-align: left;
+    
+    /* 🌟 핵심 복원: 반응형 바둑판 그리드 정렬 탑재 */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 25px; /* 카드와 카드 사이의 정갈한 간격 고정 */
+    justify-content: center; /* 잔여 공간이 남을 때 아이템들을 가운데로 밀착 */
+}
+
+/* 🎯 [개조] 개별 상품 카드 (순정 디자인 보존 및 쏠림 제거) */
+.shop-product-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    /* 🌟 주석 처리/삭제: Grid 환경에서는 width와 margin을 고정하면 핏이 깨집니다.
+    width: 290px;
+    margin: 15px 30px 15px 0;
+    display: inline-block;
+    */
+    width: 100%; /* 그리드가 지정한 박스 너비에 꽉 차도록 유연성 확보 */
+    margin: 0; /* 간격은 부모의 gap이 제어하므로 0으로 초기화 */
+    box-sizing: border-box;
+    
+    display: flex;
+    flex-direction: column;
+    vertical-align: top;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease-in-out, border-color 0.25s ease-in-out !important;
+    text-decoration: none;
+    color: inherit;
+}
+
+.shop-product-card:hover {
+    transform: translateY(-6px);
+    border-color: #007bff !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.shop-product-card .shop-img-box {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.shop-product-card .shop-img-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.shop-product-card .prod-brand {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0 0 4px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.shop-product-card .prod-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1a202c;
+    margin-bottom: 8px;
+    margin-top: 0;
+    text-align: center;
+}
+
+.shop-product-card .prod-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: #b92c2c;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    text-align: center;
+    margin-top: auto; /* 내용물이 적어도 가격과 버튼은 늘 항상 카드 밑바닥에 정렬되도록 버팀목 역할 */
+}
+
+.shop-product-card .prod-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #2d3748;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.shop-product-card .prod-btn:hover {
+    background-color: #4a5568;
+}

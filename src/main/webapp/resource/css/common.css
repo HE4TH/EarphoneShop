@@ -1,0 +1,224 @@
+@charset "UTF-8";
+
+body {
+    background-color: #ffffff;
+    font-family: 'Malgun Gothic', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* 상단 내비게이션 바 */
+.header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    height: 70px;
+    padding: 0 40px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+}
+
+.header a {
+    display: flex;
+    align-items: center;
+    color: #333333;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.header a svg {
+    margin-right: 6px;
+}
+
+.header a:hover {
+    color: #007bff;
+}
+
+/* 상단 좌측 브랜드 로고 */
+.logo-link {
+    display: flex;
+    align-items: center !important;
+    gap: 8px;
+    text-decoration: none;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    transition: transform 0.2s ease;
+    margin-right: auto !important;
+}
+
+.logo-icon {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: #1e293b;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.2s ease, transform 0.2s ease;
+    transform: translateY(3px) !important;
+}
+
+.logo-link:hover .logo-icon {
+    stroke: #007bff;
+    transform: translateY(3px) rotate(-5deg) scale(1.05) !important;
+}
+
+.logo-link:hover {
+    color: #007bff;
+}
+
+/* 통합 알약 검색창 */
+.search-form {
+    display: flex !important;
+    align-items: center !important;
+    background-color: #f1f5f9 !important;
+    border-radius: 24px !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.2s ease !important;
+    width: 240px !important;
+    min-width: 240px !important;
+    max-width: 240px !important;
+    height: 35px !important;
+    min-height: 35px !important;
+    max-height: 35px !important;
+    padding: 0 16px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+}
+
+.search-form:focus-within {
+    background-color: #ffffff !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15) !important;
+}
+
+.search-input {
+    border: none !important;
+    background: none !important;
+    outline: none !important;
+    color: #333333 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    font-family: 'Malgun Gothic', sans-serif !important;
+    flex: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 42px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.search-btn {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 0 0 8px !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.search-btn:hover {
+    color: #007bff !important;
+}
+
+/* 상단 멤버십 상태바 정렬 */
+.user-status-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+}
+
+.user-welcome-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500;
+    color: #475569 !important;
+}
+
+.user-name-text {
+    font-weight: 800 !important;
+    color: #0f172a !important;
+}
+
+.logout-action-btn {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+}
+
+.logout-action-btn:hover {
+    color: #ffffff !important;
+    background-color: #ef4444 !important;
+    border-color: #ef4444 !important;
+}
+
+/* 하단 푸터 바 */
+.shop-footer {
+    width: 100%;
+    background-color: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 30px 0;
+    text-align: center;
+    margin-top: 80px;
+}
+
+.shop-footer p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 🎯 [완치] 하단 고정 스크롤 탑 버튼 (scrollTopBtn) */
+#scrollTopBtn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    z-index: 9999; /* 화면 최상단에 둥둥 뜨도록 보장 */
+    
+    /* 아이콘이나 텍스트 중앙 정렬 플렉스 박스 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    
+    /* 부드러운 전환 효과 및 마우스 드래그 방지 */
+    transition: all 0.25s ease-in-out;
+    user-select: none;
+}
+
+/* 마우스 올렸을 때 호버 액션 효과 */
+#scrollTopBtn:hover {
+    background-color: #0056b3;
+    transform: translateY(-4px); /* 위로 살짝 통 튀는 고급 UX 효과 */
+    box-shadow: 0 6px 16px rgba(0, 86, 179, 0.4);
+}
+
+/* 클릭하는 순간 살짝 눌리는 효과 */
+#scrollTopBtn:active {
+    transform: translateY(-1px);
+}

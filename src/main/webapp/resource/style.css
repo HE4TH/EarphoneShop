@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+/* 🎯 현재 위치(./)를 명시하여 톰캣이 꼬이지 않고 하위 폴더를 정확히 찌르도록 가드 */
+@import url("./css/common.css");
+@import url("./css/main.css");
+@import url("./css/products.css");
+@import url("./css/detail.css");
+@import url("./css/cart.css");
+@import url("./css/member.css");
+@import url("./css/chatbot.css");
