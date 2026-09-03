@@ -145,7 +145,7 @@
 .main-section-title {
     font-size: 22px;
     font-weight: 800;
-    color: #1e293b;
+    color: var(--text-primary);
     margin: 0 0 20px 0;
     letter-spacing: -0.5px;
 }
@@ -158,7 +158,7 @@
 .main-section-empty {
     grid-column: 1 / -1;
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 14px;
     padding: 40px 0;
 }
