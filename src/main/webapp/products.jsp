@@ -1,6 +1,7 @@
 <%@ page import="dao.EarPhoneRepository"%>
+<%@ page import="dao.ReviewRepository"%>
 <%@ page import="dto.EarPhone"%>
-<%@ page import="java.util.ArrayList, java.util.Collections, java.util.Comparator" %>
+<%@ page import="java.util.ArrayList, java.util.Collections, java.util.Comparator, java.util.Map" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.text.DecimalFormat" %>
     
@@ -8,6 +9,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>코드 사운드 - 상품 목록</title>
 <link href="resource/style.css" rel="stylesheet" type="text/css">
 </head>
@@ -16,23 +18,48 @@
 	<jsp:include page="include/menu.jsp" />
 	
 	<%
-	    // 1. 카테고리와 정렬 파라미터 수신
+	    // 1. 카테고리, 정렬, 브랜드, 가격대 파라미터 수신
 	    String category = request.getParameter("category");
 	    String sort = request.getParameter("sort");
-	
+	    String brand = request.getParameter("brand");
+	    String priceRange = request.getParameter("priceRange");
+
 	    // 카테고리 기본값 세팅
 	    if (category == null || category.trim().isEmpty()) {
 	        category = "ALL";
 	    }
-	    
+
 	    // sort 파라미터가 없으면 '최신등록순(latest)'을 기본값으로 지정
 	    if (sort == null || sort.trim().isEmpty()) {
 	        sort = "latest";
 	    }
-	    
-	    // 2. Repository를 통해 상품 목록 조회
-	    ArrayList<EarPhone> list = EarPhoneRepository.getInstance().getProductsByCategory(category);
-	    
+
+	    if (brand == null) {
+	        brand = "ALL";
+	    }
+
+	    if (priceRange == null) {
+	        priceRange = "";
+	    }
+
+	    // 가격대 프리셋("최소-최대" 형식, 최대값이 없으면 상한 없음)을 실제 숫자로 변환
+	    Integer minPrice = null;
+	    Integer maxPrice = null;
+	    if (!priceRange.trim().isEmpty()) {
+	        String[] rangeParts = priceRange.split("-");
+	        try {
+	            if (rangeParts.length > 0 && !rangeParts[0].isEmpty()) minPrice = Integer.parseInt(rangeParts[0]);
+	            if (rangeParts.length > 1 && !rangeParts[1].isEmpty()) maxPrice = Integer.parseInt(rangeParts[1]);
+	        } catch (NumberFormatException e) {
+	            minPrice = null;
+	            maxPrice = null;
+	        }
+	    }
+
+	    // 2. Repository를 통해 상품 목록 조회 (카테고리 + 브랜드 + 가격대 필터 적용)
+	    ArrayList<EarPhone> list = EarPhoneRepository.getInstance().getFilteredProducts(category, brand, minPrice, maxPrice);
+	    ArrayList<String> brandList = EarPhoneRepository.getInstance().getDistinctBrands();
+
 	    // DB에서 가져온 목록을 사용자가 선택한 기준에 맞게 정렬
 	    if (list != null && !list.isEmpty()) {
 	        if (sort.equals("price_low")) {
@@ -53,13 +80,15 @@
 	            });
 	        } else if (sort.equals("review")) {
 	            // 리뷰 많은순 정렬 (내림차순)
-	            // TODO: DTO에 getReviewCount()가 추가되면 해당 메서드로 교체
-	            // 현재는 상품 ID 역순으로 임시 대체
+	            Map<Long, Integer> reviewCountMap = ReviewRepository.getInstance().getReviewCountMap();
+	            for (EarPhone e : list) {
+	                Integer count = reviewCountMap.get(e.getProductId());
+	                e.setReviewCount(count != null ? count : 0);
+	            }
 	            Collections.sort(list, new Comparator<EarPhone>() {
 	                @Override
 	                public int compare(EarPhone e1, EarPhone e2) {
-	                    // DTO에 리뷰 개수 컬럼이 추가되면 e2.getReviewCount() - e1.getReviewCount()로 교체
-	                    return Long.compare(e2.getProductId(), e1.getProductId()); 
+	                    return Integer.compare(e2.getReviewCount(), e1.getReviewCount());
 	                }
 	            });
 	        } else {
@@ -73,7 +102,28 @@
 	        }
 	    }
 	    
-	    // 3. 타이틀 분기문
+	    // 3. 페이지네이션 계산
+	    int pageSize = 12;
+	    int totalItems = (list != null) ? list.size() : 0;
+	    int totalPages = (int) Math.ceil(totalItems / (double) pageSize);
+	    if (totalPages < 1) totalPages = 1;
+
+	    int currentPage = 1;
+	    try {
+	        currentPage = Integer.parseInt(request.getParameter("page"));
+	    } catch (Exception e) {
+	        currentPage = 1;
+	    }
+	    if (currentPage < 1) currentPage = 1;
+	    if (currentPage > totalPages) currentPage = totalPages;
+
+	    int fromIndex = (currentPage - 1) * pageSize;
+	    int toIndex = Math.min(fromIndex + pageSize, totalItems);
+	    ArrayList<EarPhone> pagedList = (fromIndex < toIndex)
+	            ? new ArrayList<EarPhone>(list.subList(fromIndex, toIndex))
+	            : new ArrayList<EarPhone>();
+
+	    // 4. 타이틀 분기문
 	    String pageTitle = "";
 	    if (category.equalsIgnoreCase("ALL")) {
 	        pageTitle = "전체 상품 목록";
@@ -84,51 +134,90 @@
 	    }
 	%>	
 	
+	<%
+	    String sortLinkSuffix = "&brand=" + java.net.URLEncoder.encode(brand, "UTF-8")
+	            + "&priceRange=" + java.net.URLEncoder.encode(priceRange, "UTF-8");
+	%>
 	<div class="product-list-header">
 	    <h2 class="list-title"><%= pageTitle %></h2>
-	    
-	    <div class="sort-filter-group">
-	        <a href="products.jsp?category=<%= category %>&sort=latest" class="sort-item <%= sort.equals("latest") ? "active" : "" %>">최신등록순</a>
-	        <span class="sort-divider">|</span>
-	        <a href="products.jsp?category=<%= category %>&sort=price_low" class="sort-item <%= sort.equals("price_low") ? "active" : "" %>">낮은가격순</a>
-	        <span class="sort-divider">|</span>
-	        <a href="products.jsp?category=<%= category %>&sort=price_high" class="sort-item <%= sort.equals("price_high") ? "active" : "" %>">높은가격순</a>
-	        <span class="sort-divider">|</span>
-	        <a href="products.jsp?category=<%= category %>&sort=review" class="sort-item <%= sort.equals("review") ? "active" : "" %>">리뷰많은순</a>
+
+	    <div class="header-controls">
+	        <form action="products.jsp" method="get" class="filter-group">
+	            <input type="hidden" name="category" value="<%= util.HtmlUtil.escape(category) %>">
+	            <input type="hidden" name="sort" value="<%= util.HtmlUtil.escape(sort) %>">
+
+	            <select name="brand" onchange="this.form.submit()">
+	                <option value="ALL" <%= brand.equals("ALL") ? "selected" : "" %>>전체 브랜드</option>
+	                <% for (String b : brandList) { %>
+	                    <option value="<%= util.HtmlUtil.escape(b) %>" <%= brand.equals(b) ? "selected" : "" %>><%= util.HtmlUtil.escape(b) %></option>
+	                <% } %>
+	            </select>
+
+	            <select name="priceRange" onchange="this.form.submit()">
+	                <option value="" <%= priceRange.isEmpty() ? "selected" : "" %>>전체 가격대</option>
+	                <option value="0-50000" <%= priceRange.equals("0-50000") ? "selected" : "" %>>5만원 이하</option>
+	                <option value="50000-100000" <%= priceRange.equals("50000-100000") ? "selected" : "" %>>5~10만원</option>
+	                <option value="100000-200000" <%= priceRange.equals("100000-200000") ? "selected" : "" %>>10~20만원</option>
+	                <option value="200000-300000" <%= priceRange.equals("200000-300000") ? "selected" : "" %>>20~30만원</option>
+	                <option value="300000-" <%= priceRange.equals("300000-") ? "selected" : "" %>>30만원 이상</option>
+	            </select>
+	        </form>
+
+	        <div class="sort-filter-group">
+	            <a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=latest<%= sortLinkSuffix %>" class="sort-item <%= sort.equals("latest") ? "active" : "" %>">최신등록순</a>
+	            <span class="sort-divider">|</span>
+	            <a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=price_low<%= sortLinkSuffix %>" class="sort-item <%= sort.equals("price_low") ? "active" : "" %>">낮은가격순</a>
+	            <span class="sort-divider">|</span>
+	            <a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=price_high<%= sortLinkSuffix %>" class="sort-item <%= sort.equals("price_high") ? "active" : "" %>">높은가격순</a>
+	            <span class="sort-divider">|</span>
+	            <a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=review<%= sortLinkSuffix %>" class="sort-item <%= sort.equals("review") ? "active" : "" %>">리뷰많은순</a>
+	        </div>
 	    </div>
 	</div>
-	
+
 	<div class="products-container">
 
 		<%
 			DecimalFormat df = new DecimalFormat("#,###");
-		
-		    if (list != null) {
-		        for(EarPhone earphone : list) {
-		            String formattedPrice = df.format(earphone.getPrice());
+
+		    for (EarPhone earphone : pagedList) {
+		        String formattedPrice = df.format(earphone.getPrice());
 		%>
 		
         <a href="detail.jsp?productId=<%=earphone.getProductId() %>" class="shop-product-card" style="text-decoration: none; color: inherit; display: inline-block;"> 
        
 	        <div class="shop-img-box">
-                <img src="resource/main/<%= earphone.getpImage() %>" alt="<%= earphone.getpName() %>">
+                <img src="resource/main/<%= util.HtmlUtil.escape(earphone.getpImage()) %>" alt="<%= util.HtmlUtil.escape(earphone.getpName()) %>">
             </div>
-            
-            <p class="prod-brand"><%= earphone.getBrand() %></p>
-            
-            <h3 class="prod-title"><%= earphone.getpName() %></h3>
+
+            <p class="prod-brand"><%= util.HtmlUtil.escape(earphone.getBrand()) %></p>
+
+            <h3 class="prod-title"><%= util.HtmlUtil.escape(earphone.getpName()) %></h3>
             
             <p class="prod-price"><%= formattedPrice %>원</p>
 	      
 	    </a>
    	
 		<%
-		        }
 		    }
 		%>
-	
+
 	</div>
-	
+
+	<% if (totalPages > 1) { %>
+	<div class="pagination-group">
+		<% if (currentPage > 1) { %>
+			<a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=<%= util.HtmlUtil.escape(sort) %><%= sortLinkSuffix %>&page=<%= currentPage - 1 %>" class="page-item">이전</a>
+		<% } %>
+		<% for (int p = 1; p <= totalPages; p++) { %>
+			<a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=<%= util.HtmlUtil.escape(sort) %><%= sortLinkSuffix %>&page=<%= p %>" class="page-item <%= p == currentPage ? "active" : "" %>"><%= p %></a>
+		<% } %>
+		<% if (currentPage < totalPages) { %>
+			<a href="products.jsp?category=<%= util.HtmlUtil.escape(category) %>&sort=<%= util.HtmlUtil.escape(sort) %><%= sortLinkSuffix %>&page=<%= currentPage + 1 %>" class="page-item">다음</a>
+		<% } %>
+	</div>
+	<% } %>
+
 	<script>
 	    window.onscroll = function() {
 	        scrollFunction();

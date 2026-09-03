@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.TreeSet;
 import dto.EarPhone;
 import util.DBConnection;
 
@@ -84,6 +85,74 @@ public class EarPhoneRepository {
         return listOfCategory;
     }
     
+    /**
+     * 카테고리 + 브랜드 + 가격대 조합 필터링 (파라미터가 null/빈값/"ALL"이면 해당 조건은 무시)
+     */
+    public ArrayList<EarPhone> getFilteredProducts(String category, String brand, Integer minPrice, Integer maxPrice) {
+        ArrayList<EarPhone> list = new ArrayList<EarPhone>();
+
+        StringBuilder sql = new StringBuilder("SELECT * FROM dbo.earphone WHERE 1=1");
+        ArrayList<Object> params = new ArrayList<Object>();
+
+        if (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("ALL")) {
+            sql.append(" AND UPPER(category) = UPPER(?)");
+            params.add(category.trim());
+        }
+        if (brand != null && !brand.trim().isEmpty() && !brand.equalsIgnoreCase("ALL")) {
+            sql.append(" AND brand = ?");
+            params.add(brand.trim());
+        }
+        if (minPrice != null) {
+            sql.append(" AND price >= ?");
+            params.add(minPrice);
+        }
+        if (maxPrice != null) {
+            sql.append(" AND price <= ?");
+            params.add(maxPrice);
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToEarPhone(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    /**
+     * 상품 목록 필터 UI에 쓰이는 전체 브랜드 목록 (알파벳순, 중복 제거)
+     */
+    public ArrayList<String> getDistinctBrands() {
+        ArrayList<String> brands = new ArrayList<String>();
+        String sql = "SELECT DISTINCT brand FROM dbo.earphone WHERE brand IS NOT NULL";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            TreeSet<String> sorted = new TreeSet<String>();
+            while (rs.next()) {
+                sorted.add(rs.getString("brand"));
+            }
+            brands.addAll(sorted);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return brands;
+    }
+
     /**
      * 정렬 기능 결합용 목록 가져오기 메서드
      */
@@ -172,6 +241,33 @@ public class EarPhoneRepository {
             try { if (conn != null) conn.close(); } catch(Exception e) {}
         }
         return result;
+    }
+
+    /**
+     * 관리자 상품 수정
+     */
+    public boolean updateProduct(long productId, String category, String brand, String pName,
+            int price, int stock, String pImage, String pDescriptionImage1) {
+        String sql = "UPDATE dbo.earphone SET category = ?, brand = ?, pName = ?, price = ?, stock = ?, "
+                + "pImage = ?, pDescriptionImage1 = ? WHERE productId = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, category);
+            pstmt.setString(2, brand);
+            pstmt.setString(3, pName);
+            pstmt.setInt(4, price);
+            pstmt.setInt(5, stock);
+            pstmt.setString(6, pImage);
+            pstmt.setString(7, pDescriptionImage1);
+            pstmt.setLong(8, productId);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**

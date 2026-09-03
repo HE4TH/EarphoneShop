@@ -14,7 +14,8 @@ public class EarPhone {
     private String pImage;              	// 상품 이미지 파일명
     private String pDescriptionImage1;
     private String pDescriptionImage2;
-	
+    private int reviewCount;            	// 리뷰 개수 (정렬/표시용, DB 조회 후 별도 세팅)
+
 	private String wDriverType; 			// 유선 드라이버
 	private int wImpedance; 				// 유선 저항값
 	private String wFrequencyResponse; 		// 유선 주파수
@@ -266,6 +267,14 @@ public class EarPhone {
 
 	public void setBrandKn(String brandKn) {
 		this.brandKn = brandKn;
+	}
+
+	public int getReviewCount() {
+		return reviewCount;
+	}
+
+	public void setReviewCount(int reviewCount) {
+		this.reviewCount = reviewCount;
 	}
 	
 	

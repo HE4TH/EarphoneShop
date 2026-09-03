@@ -45,7 +45,7 @@
         %>
             <div class="user-status-wrapper" style="display: flex; align-items: center; gap: 12px;">
 			    <span class="user-welcome-info" style="font-size: 13px; color: #475569;">
-			        <strong class="user-name-text" style="font-weight: 800; color: #0f172a;"><%= displayName %>님</strong> 환영합니다
+			        <strong class="user-name-text" style="font-weight: 800; color: #0f172a;"><%= util.HtmlUtil.escape(displayName) %>님</strong> 환영합니다
 			    </span>
 			    
 			    <% if (sessionUserId.trim().equals("admin")) { %>

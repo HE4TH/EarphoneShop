@@ -1,30 +1,41 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="dao.EarPhoneRepository"%>
+<%@ page import="dao.ReviewRepository"%>
 <%@ page import="dto.EarPhone"%>
+<%@ page import="dto.Review"%>
 <%@ page import="java.text.DecimalFormat"%>
+<%@ page import="java.text.SimpleDateFormat"%>
 <%@ page import="java.util.ArrayList"%>
 
-<% 
+<%
 	// 1. 상품 DB 조회
 	long pId = Long.parseLong(request.getParameter("productId"));
 	EarPhoneRepository dao = EarPhoneRepository.getInstance();
 	EarPhone earphone = dao.getEarPhoneById(pId);
-	
+
 	// 3자리마다 콤마를 찍어주는 가격 포맷터 생성
 	DecimalFormat df = new DecimalFormat("#,###");
 	String formattedPrice = df.format(earphone.getPrice());
-	
+
 	String chatUserName = (String) session.getAttribute("userName");
     if (chatUserName == null || chatUserName.trim().isEmpty()) {
         chatUserName = "고객";
     }
+
+    // 2. 리뷰 목록 및 평균 평점 조회
+    ReviewRepository reviewRepo = ReviewRepository.getInstance();
+    ArrayList<Review> reviewList = reviewRepo.getReviewsByProduct(pId);
+    double avgRating = reviewRepo.getAverageRating(pId);
+    SimpleDateFormat reviewSdf = new SimpleDateFormat("yyyy-MM-dd");
+    String sessionUserId = (String) session.getAttribute("userId");
 %>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title><%= earphone.getpName() %></title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= util.HtmlUtil.escape(earphone.getpName()) %></title>
 <link href="resource/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
@@ -34,13 +45,13 @@
 	<div class="detail-main-info">
 
 		<div class="detail-main-img-box">
-			<img src="resource/main/<%= earphone.getpImage() %>" alt="<%= earphone.getpName() %>">
-			<span class="img-source-text">출처 : <%= earphone.getBrand() %></span>
+			<img src="resource/main/<%= util.HtmlUtil.escape(earphone.getpImage()) %>" alt="<%= util.HtmlUtil.escape(earphone.getpName()) %>">
+			<span class="img-source-text">출처 : <%= util.HtmlUtil.escape(earphone.getBrand()) %></span>
 		</div>
 
 		<div class="detail-main-order-box">
-			<span class="detail-brand"><%= earphone.getBrand() %></span>
-			<h1 class="detail-name"><%= earphone.getpName() %></h1>
+			<span class="detail-brand"><%= util.HtmlUtil.escape(earphone.getBrand()) %></span>
+			<h1 class="detail-name"><%= util.HtmlUtil.escape(earphone.getpName()) %></h1>
 
 			<div class="detail-price-zone">
 				<span class="detail-price"><%= formattedPrice %></span><span class="detail-won">원</span>
@@ -92,20 +103,65 @@
 
 	<div class="detail-tabs">
 		<button type="button" class="tab-item active" onclick="moveToTab('#product-desc')">상품상세</button>
-		<button type="button" class="tab-item" onclick="moveToTab('#product-review')">구매후기 (0)</button>
+		<button type="button" class="tab-item" onclick="moveToTab('#product-review')">구매후기 (<%= reviewList.size() %>)</button>
 		<button type="button" class="tab-item" onclick="moveToTab('#product-qna')">Q&A (0)</button>
 	</div>
 
 	<div id="product-desc" class="detail-image-box">
-		<img src="resource/description/<%= earphone.getpDescriptionImage1() %>" alt="<%=earphone.getpName()%>">
+		<img src="resource/description/<%= util.HtmlUtil.escape(earphone.getpDescriptionImage1()) %>" alt="<%= util.HtmlUtil.escape(earphone.getpName()) %>">
 		<% if(earphone.getpDescriptionImage2() != null) { %>
-		<img src="resource/description/<%= earphone.getpDescriptionImage2() %>" alt="상세설명2">
+		<img src="resource/description/<%= util.HtmlUtil.escape(earphone.getpDescriptionImage2()) %>" alt="상세설명2">
 		<% } %>
 	</div>
 
-	<div id="product-review" class="detail-section-placeholder">
-		<h3>구매후기</h3>
-		<p>아직 작성된 구매후기가 없습니다. 이 제품을 먼저 구매하고 첫 후기를 남겨보세요!</p>
+	<div id="product-review" class="review-section">
+		<h3>구매후기 (<%= reviewList.size() %>)</h3>
+
+		<% if (!reviewList.isEmpty()) { %>
+			<p class="review-avg-rating">평균 평점: <strong><%= String.format("%.1f", avgRating) %></strong> / 5.0</p>
+		<% } %>
+
+		<% if (sessionUserId != null && !sessionUserId.trim().isEmpty()) { %>
+			<form id="reviewForm" action="process/addReview.jsp" method="post" class="review-write-form">
+				<input type="hidden" name="csrfToken" value="<%= util.CsrfUtil.getToken(session) %>">
+				<input type="hidden" name="productId" value="<%= earphone.getProductId() %>">
+				<div class="review-form-row">
+					<label for="reviewRating">평점</label>
+					<select id="reviewRating" name="rating" required>
+						<option value="5">★★★★★ (5)</option>
+						<option value="4">★★★★☆ (4)</option>
+						<option value="3">★★★☆☆ (3)</option>
+						<option value="2">★★☆☆☆ (2)</option>
+						<option value="1">★☆☆☆☆ (1)</option>
+					</select>
+				</div>
+				<div class="review-form-row">
+					<textarea name="content" placeholder="상품 사용 후기를 남겨주세요." maxlength="1000" required></textarea>
+				</div>
+				<button type="submit" class="btn-submit-review">후기 등록</button>
+			</form>
+		<% } else { %>
+			<p class="review-login-notice"><a href="login.jsp">로그인</a> 후 후기를 작성할 수 있습니다.</p>
+		<% } %>
+
+		<% if (reviewList.isEmpty()) { %>
+			<div class="detail-section-placeholder">
+				<p>아직 작성된 구매후기가 없습니다. 이 제품을 먼저 구매하고 첫 후기를 남겨보세요!</p>
+			</div>
+		<% } else { %>
+			<ul class="review-list">
+				<% for (Review review : reviewList) { %>
+					<li class="review-item">
+						<div class="review-item-header">
+							<span class="review-author"><%= util.HtmlUtil.escape(review.getmId()) %></span>
+							<span class="review-rating"><%= review.getRating() %>점</span>
+							<span class="review-date"><%= reviewSdf.format(review.getCreateDate()) %></span>
+						</div>
+						<p class="review-content" style="white-space: pre-line;"><%= util.HtmlUtil.escape(review.getContent()) %></p>
+					</li>
+				<% } %>
+			</ul>
+		<% } %>
 	</div>
 
 	<div id="product-qna" class="detail-section-placeholder">
@@ -137,7 +193,7 @@
 	
 	    <div id="chatMessageArea">
 	        <div class="msg-bubble-ai">
-				안녕하세요, <%= chatUserName %>님! 🎧 코드 사운드 AI 쇼핑 매니저입니다. 현재 보고 계신 제품에 대해 음향 성향이나 매칭기기 등 궁금한 점이 있으시면 편하게 물어보세요!
+				안녕하세요, <%= util.HtmlUtil.escape(chatUserName) %>님! 🎧 코드 사운드 AI 쇼핑 매니저입니다. 현재 보고 계신 제품에 대해 음향 성향이나 매칭기기 등 궁금한 점이 있으시면 편하게 물어보세요!
 	        </div>
 	    </div>
 	
@@ -276,15 +332,25 @@
 	        let currentProductId = urlParams.get('productId');
 	        if(!currentProductId) currentProductId = "0";
 
-	        const userMsgHtml = `<div class="msg-bubble-user" style="color: #ffffff !important; background-color: #1e293b !important;">\${userText}</div>`;
-	        msgArea.insertAdjacentHTML('beforeend', userMsgHtml);
-	        
-	        inputField.value = ""; 
+	        const userMsgDiv = document.createElement('div');
+	        userMsgDiv.className = 'msg-bubble-user';
+	        userMsgDiv.style.color = '#ffffff';
+	        userMsgDiv.style.backgroundColor = '#1e293b';
+	        userMsgDiv.textContent = userText;
+	        msgArea.appendChild(userMsgDiv);
+
+	        inputField.value = "";
 	        msgArea.scrollTop = msgArea.scrollHeight;
 
 	        const loadingId = "ai-loading-" + Date.now();
-	        const loadingMsgHtml = `<div id="\${loadingId}" class="msg-bubble-ai"><span class="ai-typing-text">🤖 입력 중...</span></div>`;
-	        msgArea.insertAdjacentHTML('beforeend', loadingMsgHtml);
+	        const loadingDiv = document.createElement('div');
+	        loadingDiv.id = loadingId;
+	        loadingDiv.className = 'msg-bubble-ai';
+	        const loadingSpan = document.createElement('span');
+	        loadingSpan.className = 'ai-typing-text';
+	        loadingSpan.textContent = '🤖 입력 중...';
+	        loadingDiv.appendChild(loadingSpan);
+	        msgArea.appendChild(loadingDiv);
 	        msgArea.scrollTop = msgArea.scrollHeight;
 
 	        const formData = new URLSearchParams();
@@ -305,16 +371,22 @@
 	        .then(aiReplyText => {
 	            const loadingElement = document.getElementById(loadingId);
 	            if(loadingElement) loadingElement.remove();
-	            
-	            const aiMsgHtml = `<div class="msg-bubble-ai">\${aiReplyText.trim()}</div>`;
-	            msgArea.insertAdjacentHTML('beforeend', aiMsgHtml);
+
+	            const aiMsgDiv = document.createElement('div');
+	            aiMsgDiv.className = 'msg-bubble-ai';
+	            aiMsgDiv.textContent = aiReplyText.trim();
+	            msgArea.appendChild(aiMsgDiv);
 	            msgArea.scrollTop = msgArea.scrollHeight;
 	        })
 	        .catch(err => {
 	            console.error("챗봇 통신 에러:", err);
 	            const loadingElement = document.getElementById(loadingId);
 	            if(loadingElement) {
-	                loadingElement.innerHTML = "<span style='color:#ef4444;'>❌ 응답 실패 (API 키 또는 네트워크 확인)</span>";
+	                loadingElement.textContent = "";
+	                const errSpan = document.createElement('span');
+	                errSpan.style.color = '#ef4444';
+	                errSpan.textContent = '❌ 응답 실패 (API 키 또는 네트워크 확인)';
+	                loadingElement.appendChild(errSpan);
 	            }
 	        });
 	    }

@@ -30,6 +30,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 주문 완료</title>
     <link rel="stylesheet" href="resource/style.css">
 </head>
@@ -55,7 +56,7 @@
                 
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">
                     <span style="color: #64748b;">주문자명</span>
-                    <strong style="color: #1e293b;"><%= orderName %>님</strong>
+                    <strong style="color: #1e293b;"><%= util.HtmlUtil.escape(orderName) %>님</strong>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">

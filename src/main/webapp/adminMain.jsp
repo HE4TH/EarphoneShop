@@ -24,6 +24,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 관리자 모드</title>
     <link rel="stylesheet" href="resource/style.css">
     
@@ -70,14 +71,16 @@
     <div class="admin-container">
         <h2 style="color: #0f172a; font-size: 26px; margin-bottom: 5px; font-weight: 800;">🛠️ 코드 사운드 마스터 관리자 페이지</h2>
         <p style="color: #64748b; font-size: 14px; margin-top: 0; margin-bottom: 35px;">
-            현재 계정: <span style="color: #0f172a; font-weight: 600;"><%= sessionUserId %></span> |
+            현재 계정: <span style="color: #0f172a; font-weight: 600;"><%= util.HtmlUtil.escape(sessionUserId) %></span> |
+            <a href="adminOrders.jsp" style="color: #007bff; text-decoration: none; font-weight: 600;">주문 관리</a> |
             <a href="logout.jsp" style="color: #ef4444; text-decoration: none; font-weight: 600;">마스터 로그아웃</a>
         </p>
 
         <div class="admin-card">
             <h3>📦이어폰 신규 상품 출시</h3>
             <form action="process/processAddProduct.jsp" method="post" enctype="multipart/form-data">
-                
+                <input type="hidden" name="csrfToken" value="<%= util.CsrfUtil.getToken(session) %>">
+
                 <div class="flex-row">
                     <div class="form-group flex-child">
                         <label>상품 카테고리</label>
@@ -164,14 +167,19 @@
                 %>
                     <tr>
                         <td><%= p.getProductId() %></td>
-                        <td style="color: #64748b; font-size: 13px;"><%= p.getCategory() %></td>
-                        <td><%= p.getBrand() %></td>
-                        <td><strong><%= p.getpName() %></strong></td>
+                        <td style="color: #64748b; font-size: 13px;"><%= util.HtmlUtil.escape(p.getCategory()) %></td>
+                        <td><%= util.HtmlUtil.escape(p.getBrand()) %></td>
+                        <td><strong><%= util.HtmlUtil.escape(p.getpName()) %></strong></td>
                         <td style="color: #007bff; font-weight: 600;"><%= df.format(p.getPrice()) %>원</td>
                         <td><%= p.getStock() %>개</td>
                         <td>
-                            <a href="process/processDeleteProduct.jsp?productId=<%= p.getProductId() %>" 
-                               class="btn-delete" 
+                            <a href="adminEditProduct.jsp?productId=<%= p.getProductId() %>"
+                               class="btn-delete"
+                               style="background: #007bff; margin-right: 6px;">
+                               수정
+                            </a>
+                            <a href="process/processDeleteProduct.jsp?productId=<%= p.getProductId() %>"
+                               class="btn-delete"
                                onclick="return confirm('이 상품을 제거하시겠습니까?');">
                                제거
                             </a>

@@ -57,6 +57,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 마이페이지</title>
     <link rel="stylesheet" href="resource/style.css">
     <style>
@@ -80,6 +81,14 @@
         /* 회원 탈퇴 경고 박스 */
         .withdraw-warning-box { background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: left; }
         .withdraw-warning-box p { color: #be123c; font-size: 13px; margin: 4px 0; font-weight: 500; }
+
+        @media (max-width: 768px) {
+            .mypage-layout { flex-direction: column; gap: 16px; }
+            .mypage-sidebar { width: 100%; }
+            .mypage-menu-list { display: flex; overflow-x: auto; }
+            .mypage-menu-item { white-space: nowrap; border-bottom: none; border-right: 1px solid #f1f5f9; }
+            .mypage-content-area { padding: 18px; }
+        }
     </style>
 </head>
 <body>
@@ -88,7 +97,7 @@
 
     <div class="cart-container" style="max-width: 1050px; margin-top: 40px;">
         <div class="cart-header" style="border-bottom: 2px solid #1e293b; padding-bottom: 15px; margin-bottom: 10px;">
-            <h2 style="font-size: 26px; font-weight: 800; color: #1e293b;"><%= sessionUserId %>님의 대시보드</h2>
+            <h2 style="font-size: 26px; font-weight: 800; color: #1e293b;"><%= util.HtmlUtil.escape(sessionUserId) %>님의 대시보드</h2>
         </div>
 
         <div class="mypage-layout">
@@ -106,57 +115,65 @@
                 <div id="tab-orders" class="tab-content active">
                     <h3 style="font-size: 18px; font-weight: 700; color: #334155; margin-bottom: 20px; text-align: left;">주문/배송 내역</h3>
                     <%
-                        try {
-                            conn = util.DBConnection.getConnection();
-                            String sql = "SELECT orderId, orderName, totalPrice, orderDate, address, addressDetail FROM dbo.orders WHERE TRIM(mId) = ? ORDER BY orderId DESC";
-                            pstmt = conn.prepareStatement(sql);
-                            pstmt.setString(1, sessionUserId.trim());
-                            rs = pstmt.executeQuery();
-                            
-                            boolean hasOrders = false;
-                            while (rs.next()) {
-                                hasOrders = true;
-                                int orderId = rs.getInt("orderId");
-                                String orderName = rs.getString("orderName");
-                                int totalPrice = rs.getInt("totalPrice");
-                                Timestamp orderDate = rs.getTimestamp("orderDate");
-                                String fullAddress = rs.getString("address") + " " + rs.getString("addressDetail");
-                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    %>
-                                <div class="order-history-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: left;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 15px;">
-                                        <div>
-                                            <span style="color: #64748b; font-size: 13px; font-weight: 500;">주문일자 │ <%= sdf.format(orderDate) %></span>
-                                            <span style="margin: 0 10px; color: #cbd5e1;">|</span>
-                                            <span style="color: #007bff; font-size: 13px; font-weight: 700;">주문번호 No.<%= orderId %></span>
-                                        </div>
-                                        <span style="background: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">배송준비중</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                        <div>
-                                            <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 6px;"><%= orderName %>님 결제 완료 건</h4>
-                                            <p style="color: #64748b; font-size: 13px;">📍 배송지: <%= fullAddress %></p>
-                                        </div>
-                                        <div style="text-align: right;">
-                                            <span style="color: #94a3b8; font-size: 12px; display: block; margin-bottom: 4px;">총 결제 금액</span>
-                                            <strong style="font-size: 18px; color: #1e293b; font-weight: 800;"><%= df.format(totalPrice) %>원</strong>
-                                        </div>
-                                    </div>
-                                </div>
-                    <%
-                            }
-                            if (!hasOrders) {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+                        java.util.ArrayList<dto.Order> orderList = dao.OrderRepository.getInstance().getOrdersByMember(sessionUserId.trim());
+
+                        if (orderList.isEmpty()) {
                     %>
                                 <div class="detail-section-placeholder" style="text-align: center; padding: 60px 20px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
                                     <span style="font-size: 40px; display: block; margin-bottom: 15px;">📦</span>
                                     <h3 style="color: #475569; font-size: 16px; font-weight: 700;">아직 주문하신 내역이 없습니다.</h3>
                                 </div>
                     <%
+                        } else {
+                            for (dto.Order order : orderList) {
+                                String status = order.getOrderStatus();
+                                String badgeStyle = "background: #e0f2fe; color: #0369a1;";
+                                if ("배송중".equals(status)) badgeStyle = "background: #fef9c3; color: #a16207;";
+                                else if ("배송완료".equals(status)) badgeStyle = "background: #dcfce7; color: #15803d;";
+                                else if ("취소됨".equals(status)) badgeStyle = "background: #fee2e2; color: #b91c1c;";
+                                String fullAddress = order.getAddress() + " " + order.getAddressDetail();
+                                java.util.ArrayList<dto.OrderItem> orderItems = dao.OrderRepository.getInstance().getOrderItems(order.getOrderId());
+                    %>
+                                <div class="order-history-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: left;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 15px;">
+                                        <div>
+                                            <span style="color: #64748b; font-size: 13px; font-weight: 500;">주문일자 │ <%= sdf.format(order.getOrderDate()) %></span>
+                                            <span style="margin: 0 10px; color: #cbd5e1;">|</span>
+                                            <span style="color: #007bff; font-size: 13px; font-weight: 700;">주문번호 No.<%= order.getOrderId() %></span>
+                                        </div>
+                                        <span style="<%= badgeStyle %> font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;"><%= util.HtmlUtil.escape(status) %></span>
+                                    </div>
+
+                                    <ul style="list-style: none; padding: 0; margin: 0 0 12px 0;">
+                                    <% for (dto.OrderItem item : orderItems) { %>
+                                        <li style="font-size: 13px; color: #475569; padding: 4px 0;">
+                                            <%= util.HtmlUtil.escape(item.getpName()) %> × <%= item.getQuantity() %>개 (<%= df.format(item.getPrice() * item.getQuantity()) %>원)
+                                        </li>
+                                    <% } %>
+                                    </ul>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 6px;"><%= util.HtmlUtil.escape(order.getOrderName()) %>님 결제 완료 건</h4>
+                                            <p style="color: #64748b; font-size: 13px;">📍 배송지: <%= util.HtmlUtil.escape(fullAddress) %></p>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="color: #94a3b8; font-size: 12px; display: block; margin-bottom: 4px;">총 결제 금액</span>
+                                            <strong style="font-size: 18px; color: #1e293b; font-weight: 800;"><%= df.format(order.getTotalPrice()) %>원</strong>
+                                        </div>
+                                    </div>
+
+                                    <% if ("배송준비중".equals(status)) { %>
+                                        <form action="process/cancelOrder.jsp" method="post" style="text-align: right; margin-top: 12px;" onsubmit="return confirm('이 주문을 취소하시겠습니까?');">
+                                            <input type="hidden" name="csrfToken" value="<%= util.CsrfUtil.getToken(session) %>">
+                                            <input type="hidden" name="orderId" value="<%= order.getOrderId() %>">
+                                            <button type="submit" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer;">주문 취소</button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                    <%
                             }
-                        } catch(Exception e) { e.printStackTrace(); } finally {
-                            if (rs != null) try { rs.close(); } catch(Exception e) {}
-                            if (pstmt != null) try { pstmt.close(); } catch(Exception e) {}
-                            if (conn != null) try { conn.close(); } catch(Exception e) {}
                         }
                     %>
                 </div>
@@ -166,7 +183,7 @@
                     <form action="process/updateProfileProcess.jsp" method="post" style="max-width: 500px;">
                         <div class="my-form-group">
                             <label>아이디</label>
-                            <input type="text" name="mId" value="<%= sessionUserId %>" readonly>
+                            <input type="text" name="mId" value="<%= util.HtmlUtil.escape(sessionUserId) %>" readonly>
                         </div>
                         <div class="my-form-group">
                             <label>새 비밀번호 변경</label>
@@ -174,15 +191,15 @@
                         </div>
                         <div class="my-form-group">
                             <label>이름</label>
-                            <input type="text" name="mName" value="<%= mName %>" required>
+                            <input type="text" name="mName" value="<%= util.HtmlUtil.escape(mName) %>" required>
                         </div>
                         <div class="my-form-group">
                             <label>이메일 주소</label>
-                            <input type="text" name="mail" value="<%= mail %>" required>
+                            <input type="text" name="mail" value="<%= util.HtmlUtil.escape(mail) %>" required>
                         </div>
                         <div class="my-form-group">
                             <label>연락처</label>
-                            <input type="text" name="phone" value="<%= phone %>" required>
+                            <input type="text" name="phone" value="<%= util.HtmlUtil.escape(phone) %>" required>
                         </div>
                         <div style="text-align: left; margin-top: 30px;">
                             <button type="submit" class="btn-submit-member" style="background-color: #1e293b !important; max-width: 180px; margin: 0; font-size: 14px; height: 45px;">
@@ -198,11 +215,11 @@
                         <div class="my-form-group">
                             <label>기본 배송 주소지</label>
                             <div class="address-zip-zone" style="display: flex; gap: 10px; margin-bottom: 8px;">
-                                <input type="text" id="mypage_postcode" name="zipCode" value="<%= zipCode %>" placeholder="우편번호" readonly style="flex: 1;">
+                                <input type="text" id="mypage_postcode" name="zipCode" value="<%= util.HtmlUtil.escape(zipCode) %>" placeholder="우편번호" readonly style="flex: 1;">
                                 <button type="button" class="btn-search-address" onclick="execMypagePostcode()" style="margin: 0; white-space: nowrap; padding: 0 15px; font-size: 13px;">주소 검색</button>
                             </div>
-                            <input type="text" id="mypage_address" name="address" value="<%= address %>" placeholder="기본 주소" required style="margin-bottom: 8px;">
-                            <input type="text" id="mypage_detailAddress" name="addressDetail" value="<%= addressDetail %>" placeholder="나머지 상세 주소 명시">
+                            <input type="text" id="mypage_address" name="address" value="<%= util.HtmlUtil.escape(address) %>" placeholder="기본 주소" required style="margin-bottom: 8px;">
+                            <input type="text" id="mypage_detailAddress" name="addressDetail" value="<%= util.HtmlUtil.escape(addressDetail) %>" placeholder="나머지 상세 주소 명시">
                         </div>
                         <div style="text-align: left; margin-top: 30px;">
                             <button type="submit" class="btn-submit-member" style="background-color: #007bff !important; max-width: 180px; margin: 0; font-size: 14px; height: 45px;">
@@ -222,9 +239,10 @@
                     </div>
 
                     <form action="process/withdrawProcess.jsp" method="post" style="max-width: 500px;" onsubmit="return confirmWithdraw()">
+                        <input type="hidden" name="csrfToken" value="<%= util.CsrfUtil.getToken(session) %>">
                         <div class="my-form-group">
                             <label>계정 확인</label>
-                            <input type="text" value="<%= sessionUserId %>" readonly style="color: #94a3b8;">
+                            <input type="text" value="<%= util.HtmlUtil.escape(sessionUserId) %>" readonly style="color: #94a3b8;">
                         </div>
                         
                         <div class="my-form-group">

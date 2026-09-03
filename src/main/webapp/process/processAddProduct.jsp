@@ -31,9 +31,10 @@
     String pName = "";
     int price = 0;
     int stock = 0;
-    String pImage = "default.jpg"; 
-    String pDescriptionImage1 = "default_detail.jpg"; 
-    String description = ""; 
+    String pImage = "default.jpg";
+    String pDescriptionImage1 = "default_detail.jpg";
+    String description = "";
+    String csrfToken = "";
 
     // 폼의 각 파트를 텍스트/파일로 분리해 처리
     for (Part part : request.getParts()) {
@@ -44,13 +45,18 @@
             BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream(), "UTF-8"));
             String value = reader.readLine();
             if (value != null) value = value.trim();
-            
+
             if (name.equals("category")) category = value;
             else if (name.equals("brand")) brand = value;
             else if (name.equals("pName")) pName = value;
-            else if (name.equals("price")) price = Integer.parseInt(value);
-            else if (name.equals("stock")) stock = Integer.parseInt(value);
+            else if (name.equals("price")) {
+                try { price = Integer.parseInt(value); } catch (NumberFormatException e) { price = -1; }
+            }
+            else if (name.equals("stock")) {
+                try { stock = Integer.parseInt(value); } catch (NumberFormatException e) { stock = -1; }
+            }
             else if (name.equals("description")) description = value;
+            else if (name.equals("csrfToken")) csrfToken = value;
         } else {
             // 파일 파트 처리
             String disposition = part.getHeader("Content-Disposition");
@@ -75,6 +81,36 @@
                 }
             }
         }
+    }
+
+    // 2-1. CSRF 토큰 검증
+    String sessionCsrfToken = (String) session.getAttribute("csrfToken");
+    if (sessionCsrfToken == null || !sessionCsrfToken.equals(csrfToken)) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "잘못된 요청입니다.");
+        return;
+    }
+
+    // 2-2. 서버단 입력 검증 (필수값, 가격/재고 범위)
+    if (category == null || category.trim().isEmpty()
+            || brand == null || brand.trim().isEmpty()
+            || pName == null || pName.trim().isEmpty()) {
+%>
+        <script>
+            alert("필수 입력값이 누락되었습니다.");
+            history.back();
+        </script>
+<%
+        return;
+    }
+
+    if (price <= 0 || stock < 0) {
+%>
+        <script>
+            alert("가격은 0보다 커야 하고, 재고는 음수일 수 없습니다.");
+            history.back();
+        </script>
+<%
+        return;
     }
 
     // 3. DB에 상품 정보 저장

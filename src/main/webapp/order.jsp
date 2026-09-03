@@ -92,6 +92,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Sound | ORDER</title>
     <link rel="stylesheet" href="resource/style.css">
 </head>
@@ -124,7 +125,7 @@
                                 totalSum += subTotal;
                         %>
                             <tr>
-                                <td><strong><%= item.getpName() %></strong></td>
+                                <td><strong><%= util.HtmlUtil.escape(item.getpName()) %></strong></td>
                                 <td style="text-align: center;"><%= item.getStock() %>개</td>
                                 <td style="text-align: right; font-weight: 700;"><%= String.format("%,d", subTotal) %>원</td>
                             </tr>
@@ -142,31 +143,32 @@
             <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 30px 0;">
 
             <form id="orderForm" action="process/processOrder.jsp" method="post" onsubmit="return validateOrderForm()">
+                <input type="hidden" name="csrfToken" value="<%= util.CsrfUtil.getToken(session) %>">
                 <h3 class="order-sub-title">배송 정보</h3>
                 
                 <div class="input-group">
                     <label>주문자명</label>
-                    <input type="text" name="orderName" value="<%= mName %>" required>
+                    <input type="text" name="orderName" value="<%= util.HtmlUtil.escape(mName) %>" required>
                 </div>
 
                 <div class="input-group">
                     <label>연락처</label>
-                    <input type="text" name="orderPhone" value="<%= phone %>" placeholder="010-0000-0000" required>
+                    <input type="text" name="orderPhone" value="<%= util.HtmlUtil.escape(phone) %>" placeholder="010-0000-0000" required>
                 </div>
 
                 <div class="input-group">
                     <label>이메일</label>
-                    <input type="text" name="orderMail" value="<%= mail %>" required>
+                    <input type="text" name="orderMail" value="<%= util.HtmlUtil.escape(mail) %>" required>
                 </div>
 
                 <div class="input-group">
 				    <label>배송지 주소</label>
 				    <div class="address-zip-zone">
-				        <input type="text" id="sample6_postcode" name="zipCode" value="<%= zipCode %>" placeholder="우편번호" readonly required>
+				        <input type="text" id="sample6_postcode" name="zipCode" value="<%= util.HtmlUtil.escape(zipCode) %>" placeholder="우편번호" readonly required>
 				        <button type="button" class="btn-search-address" onclick="execDaumPostcode()">주소 검색/변경</button>
 				    </div>
-				    <input type="text" id="sample6_address" name="address" value="<%= address %>" placeholder="기본 배송지 주소" required>
-				    <input type="text" id="sample6_detailAddress" name="addressDetail" value="<%= addressDetail %>" placeholder="나머지 상세 주소를 입력해 주세요">
+				    <input type="text" id="sample6_address" name="address" value="<%= util.HtmlUtil.escape(address) %>" placeholder="기본 배송지 주소" required>
+				    <input type="text" id="sample6_detailAddress" name="addressDetail" value="<%= util.HtmlUtil.escape(addressDetail) %>" placeholder="나머지 상세 주소를 입력해 주세요">
 				    <input type="hidden" id="sample6_extraAddress">
 				</div>
 

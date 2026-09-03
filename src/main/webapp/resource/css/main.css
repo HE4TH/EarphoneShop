@@ -64,3 +64,28 @@
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0,123,255,0.3);
 }
+
+@media (max-width: 768px) {
+    .container h1 {
+        font-size: 2rem;
+        margin-bottom: 28px;
+    }
+
+    .main-hero-icon {
+        width: 60px !important;
+        height: 60px !important;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 14px;
+        width: 100%;
+        padding: 0 30px;
+        box-sizing: border-box;
+    }
+
+    .button-group a {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

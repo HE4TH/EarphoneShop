@@ -222,3 +222,48 @@ body {
 #scrollTopBtn:active {
     transform: translateY(-1px);
 }
+
+/* ===== 반응형: 태블릿/모바일 ===== */
+@media (max-width: 768px) {
+    .header {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 60px;
+        padding: 10px 16px;
+        gap: 10px;
+    }
+
+    .logo-link {
+        font-size: 16px;
+        margin-right: 0 !important;
+    }
+
+    .search-form {
+        order: 3;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .user-welcome-info {
+        display: none !important;
+    }
+
+    #scrollTopBtn {
+        bottom: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 8px 12px;
+    }
+
+    .logout-action-btn {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+}

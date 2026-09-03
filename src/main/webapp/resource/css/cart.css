@@ -367,3 +367,32 @@
 .text-center { text-align: center !important; }
 .txt-bold { font-weight: 600; color: #1e293b; }
 .txt-price { font-weight: 700; color: #0f172a; }
+
+@media (max-width: 900px) {
+    .cart-flex-wrapper,
+    #cartForm > div {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+
+    .cart-summary-box {
+        width: 100% !important;
+        min-width: 0 !important;
+        position: static !important;
+    }
+
+    .cart-main-content {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .cart-table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cart-container {
+        padding: 0 12px;
+    }
+}

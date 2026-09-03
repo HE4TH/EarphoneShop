@@ -3,6 +3,7 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="dto.EarPhone" %>
 <%@ page import="dao.EarPhoneRepository" %>
+<%@ page import="jakarta.servlet.http.HttpServletResponse" %>
 
 <%
     // 1. 한글 인코딩 설정 및 로그인 세션 검증
@@ -16,6 +17,12 @@
             location.href = "../login.jsp";
         </script>
 <%
+        return;
+    }
+
+    // 1-1. CSRF 토큰 검증
+    if (!util.CsrfUtil.isValid(request)) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "잘못된 요청입니다.");
         return;
     }
 
@@ -60,7 +67,7 @@
         // (1) dbo.orders 테이블에 주문 내역 저장
         String sql = "INSERT INTO dbo.orders (mId, orderName, orderPhone, orderMail, zipCode, address, addressDetail, totalPrice) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        pstmt = conn.prepareStatement(sql);
+        pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         pstmt.setString(1, sessionUserId.trim());
         pstmt.setString(2, orderName.trim());
         pstmt.setString(3, orderPhone.trim());
@@ -69,10 +76,21 @@
         pstmt.setString(6, address);
         pstmt.setString(7, addressDetail);
         pstmt.setInt(8, totalPrice);
-        
+
         int rows = pstmt.executeUpdate();
-        
+
         if (rows > 0) {
+            // (1-1) 생성된 주문번호 확보 후 구매 품목 스냅샷 저장 (주문 상세/취소 시 필요)
+            int generatedOrderId = -1;
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    generatedOrderId = keys.getInt(1);
+                }
+            }
+            if (generatedOrderId > 0) {
+                dao.OrderRepository.getInstance().insertOrderItems(conn, generatedOrderId, cartList);
+            }
+
             // (2) 상품별 DB 재고 차감
             for (EarPhone item : cartList) {
                 repository.updateStock(item.getStock(), item.getProductId());
@@ -83,7 +101,7 @@
             pstmtDel = conn.prepareStatement(sqlDel);
             pstmtDel.setString(1, sessionUserId.trim());
             pstmtDel.executeUpdate();
-            
+
             isOrderSuccess = true;
         }
         

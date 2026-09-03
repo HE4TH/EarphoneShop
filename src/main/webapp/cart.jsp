@@ -8,6 +8,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>코드 사운드 - 장바구니</title>
 <link href="resource/style.css" rel="stylesheet" type="text/css">
 </head>
@@ -83,16 +84,16 @@
 									href="detail.jsp?productId=<%= item.getProductId() %>"
 									class="cart-img-link">
 										<div class="cart-img-box">
-											<img src="resource/main/<%= item.getpImage() %>"
-												alt="<%= item.getpName() %>">
+											<img src="resource/main/<%= util.HtmlUtil.escape(item.getpImage()) %>"
+												alt="<%= util.HtmlUtil.escape(item.getpName()) %>">
 										</div>
 								</a></td>
 
-								<td class="text-left"><span class="cart-item-brand"><%= item.getBrand() %></span>
+								<td class="text-left"><span class="cart-item-brand"><%= util.HtmlUtil.escape(item.getBrand()) %></span>
 
 									<a href="detail.jsp?productId=<%= item.getProductId() %>"
 									class="cart-item-name-link">
-										<h4 class="cart-item-name"><%= item.getpName() %></h4>
+										<h4 class="cart-item-name"><%= util.HtmlUtil.escape(item.getpName()) %></h4>
 								</a></td>
 								<td><span class="txt-bold"><%= df.format(item.getPrice()) %>원</span></td>
 								<td><span class="txt-free">무료배송</span></td>

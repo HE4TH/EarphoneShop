@@ -463,3 +463,41 @@
 .order-summary-zone + form input[type="text"] {
     margin-bottom: 8px;
 }
+
+@media (max-width: 480px) {
+    .member-card {
+        padding: 30px 20px;
+    }
+
+    .phone-input-zone {
+        gap: 4px !important;
+    }
+
+    #phone1, #phone2, #phone3 {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 !important;
+    }
+
+    .phone-dash {
+        padding: 0 2px !important;
+    }
+
+    .email-input-zone {
+        flex-wrap: wrap !important;
+    }
+
+    #emailSelect {
+        flex: 1 1 100% !important;
+        margin-top: 6px;
+    }
+
+    .address-zip-zone {
+        flex-wrap: wrap !important;
+    }
+
+    #sample6_postcode {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+}

@@ -10,6 +10,11 @@
         return;
     }
 
+    if (!util.CsrfUtil.isValid(request)) {
+        response.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN, "잘못된 요청입니다.");
+        return;
+    }
+
     Connection conn = null;
     PreparedStatement pstmtCheck = null;
     PreparedStatement pstmtDelete = null;
@@ -27,7 +32,7 @@
         if (rs.next()) {
             String dbPasswd = rs.getString("passwd");
             
-            if (dbPasswd != null && dbPasswd.trim().equals(inputPasswd.trim())) {
+            if (util.PasswordUtil.verify(inputPasswd.trim(), dbPasswd)) {
                 // 2. 비밀번호 일치 시 member 테이블에서 삭제
                 String sqlDelete = "DELETE FROM dbo.member WHERE TRIM(mId) = ?";
                 pstmtDelete = conn.prepareStatement(sqlDelete);

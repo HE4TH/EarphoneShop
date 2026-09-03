@@ -11,10 +11,34 @@
     String mId = request.getParameter("mId");
     String passwd = request.getParameter("passwd");
 
+    if (mId == null || mId.trim().isEmpty() || passwd == null || passwd.trim().isEmpty()) {
+%>
+        <script>
+            alert("아이디와 비밀번호를 입력해 주세요.");
+            history.back();
+        </script>
+<%
+        return;
+    }
+
     // login.jsp의 hidden 필드로 전달된 로그인 직전 페이지 주소
     String prevPage = request.getParameter("prevPage");
-    if (prevPage == null || prevPage.trim().isEmpty()) {
+    if (prevPage == null || prevPage.trim().isEmpty()
+            || prevPage.contains("://") || prevPage.startsWith("//")) {
         prevPage = "../main.jsp";
+    }
+
+    // 무차별 대입 공격 방지: 접속 IP + 아이디 조합으로 5분에 5회까지만 로그인 시도 허용
+    String clientIp = request.getRemoteAddr();
+    String rateLimitKey = "login:" + clientIp + ":" + (mId != null ? mId.trim() : "");
+    if (!util.RateLimiter.isAllowed(rateLimitKey, 5, 5 * 60 * 1000L)) {
+%>
+        <script>
+            alert("로그인 시도가 너무 많습니다. 5분 후 다시 시도해 주세요.");
+            history.back();
+        </script>
+<%
+        return;
     }
 
     Connection conn = null;
@@ -28,19 +52,24 @@
     try {
         conn = util.DBConnection.getConnection();
         
-        String sql = "SELECT mName FROM member WHERE mId = ? AND passwd = ?";
-        
+        String sql = "SELECT mName, passwd FROM member WHERE mId = ?";
+
         pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, mId.trim());
-        pstmt.setString(2, passwd.trim());
-        
+
         rs = pstmt.executeQuery();
-        
+
         // 3. 인증 결과 처리
-        if (rs.next()) {
+        if (rs.next() && util.PasswordUtil.verify(passwd.trim(), rs.getString("passwd"))) {
             isLoginSuccess = true;
             String mName = rs.getString("mName");
-            
+
+            // 로그인 성공 시 시도 횟수 제한 초기화
+            util.RateLimiter.reset(rateLimitKey);
+
+            // 세션 고정(Session Fixation) 공격 방지: 인증 성공 시 세션 ID 재발급
+            request.changeSessionId();
+
             // 로그인 전역 세션 바인딩
             session.setAttribute("userId", mId.trim());
             session.setAttribute("userName", mName.trim());
@@ -109,7 +138,7 @@
             } else {
 %>
                 <script>
-                    location.href = "<%= prevPage %>"; // 일반 회원은 구경하던 페이지로 복귀
+                    location.href = "<%= util.HtmlUtil.escapeJs(prevPage) %>"; // 일반 회원은 구경하던 페이지로 복귀
                 </script>
 <%
             }

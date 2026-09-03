@@ -2,8 +2,8 @@
 <%
     // 메뉴바에서 전달된 "직전 페이지 주소" 조회
     String prevPage = request.getParameter("prevPage");
-    if (prevPage == null) {
-        prevPage = "main.jsp";
+    if (prevPage == null || prevPage.trim().isEmpty()) {
+        prevPage = request.getContextPath() + "/main.jsp";
     }
     String checkSessionId = (String) session.getAttribute("userId");
     if (checkSessionId != null && !checkSessionId.trim().isEmpty()) {
@@ -22,6 +22,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Sound | 로그인</title>
     <link rel="stylesheet" href="resource/style.css">
 </head>
@@ -38,7 +39,7 @@
 
             <form id="loginForm" action="process/processLogin.jsp" method="post" onsubmit="return validateLoginForm()">
                 
-                <input type="hidden" name="prevPage" value="<%= prevPage %>">
+                <input type="hidden" name="prevPage" value="<%= util.HtmlUtil.escape(prevPage) %>">
                 
                 <div class="input-group">
                     <label for="mId">아이디</label>
