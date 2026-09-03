@@ -72,6 +72,29 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 - 아이디 중복 확인(`process/checkId.jsp`, 비동기 fetch)
 - 카테고리별 상품 목록(유선/무선) 및 검색(`products.jsp`, `searchResult.jsp`)
 
+## 모델 비교 벤치마크 (`src/main/java/bench/`)
+
+AI 챗봇/연관상품 추천에 어떤 모델·방식을 쓸지 실측 데이터로 결정하기 위해 만든 독립 실행 스크립트입니다. 웹앱 배포와는 무관하며, 커맨드라인에서 직접 실행합니다.
+
+- `ChatbotBenchmark.java` — 고정 질문 8개(음향성향/기기매칭/가격/스펙/배송/환각유도/범위이탈/오타) × 3회 반복으로 **Mistral Small / Gemini 2.5 Flash / Qwen 2.5 72B / Llama 3.3 70B**(Qwen·Llama는 OpenRouter 경유)를 동일 시스템 프롬프트로 호출해 응답시간·토큰 사용량·환각 여부를 CSV로 기록합니다.
+- `RetryBenchmark.java` — Mistral/Gemini 호출 간 딜레이를 두고 재실행할 때 사용(무료 티어 rate limit 회피).
+- 실행 예: `java -cp "build/classes;src/main/webapp/WEB-INF/lib/mssql-jdbc-13.4.0.jre11.jar" bench.ChatbotBenchmark`
+- 실행하려면 `config.properties`에 `mistral.api.key`, `gemini.api.key`, `openrouter.api.key`가 필요합니다(앱 실행 자체에는 `gemini.api.key`/`openrouter.api.key`가 불필요 — 벤치마크 전용).
+- 결과는 `benchmark_results/*.csv`에 저장되며 저장소에는 커밋되지 않습니다(`.gitignore`).
+
+**측정 결과 요약** (2026-09-03 기준, 상품 6개 소규모 카탈로그):
+
+| 모델 | 성공률 | 평균 응답시간 | 비고 |
+|---|---|---|---|
+| Mistral Small | 100% | 3.6초 | 범위 이탈 질문 완벽 거절, 가장 균형 잡힘 |
+| Gemini 2.5 Flash | 83% | 8.9초 | 무료 티어 rate limit으로 실패율 있음 |
+| Qwen 2.5 72B (OpenRouter) | ~96% | 20.4초 | 응답 중 중국어 혼입 1건, 범위 이탈 대응 불안정 |
+| Llama 3.3 70B (OpenRouter) | 100% | 12.0초 | 범위 이탈 질문에 실제 향수 브랜드를 추천(스코프 위반) |
+
+환각 테스트(카탈로그에 없는 제품 문의)는 4개 모델 모두 지어내지 않고 정직하게 답변해 통과했습니다.
+
+연관 상품 추천은 Gemini API 호출 대비 규칙 기반(같은 카테고리+가격 근접)이 **성공률 100% vs 33%, 응답속도 65배 이상 빠름(0.2초 vs 13~23초), 결과 결정적(동일 입력 → 항상 동일 출력)**으로 나타나 규칙 기반으로 채택했습니다(`dao/RuleBasedRecommendation.java`).
+
 ## 프로젝트 구조
 
 ```
@@ -79,7 +102,7 @@ src/main/java/
 ├── dao/                     # EarPhoneRepository, ReviewRepository, OrderRepository, RuleBasedRecommendation(연관상품)
 ├── dto/                     # EarPhone, Review, Order, OrderItem
 ├── util/                    # DBConnection, ConfigLoader, PasswordUtil, HtmlUtil, CsrfUtil, RateLimiter, ValidationUtil
-├── bench/                   # 챗봇/추천 모델 비교 벤치마크 스크립트 (아래 "모델 비교 벤치마크" 참고)
+├── bench/                   # 챗봇/추천 모델 비교 벤치마크 스크립트 (위 "모델 비교 벤치마크" 참고)
 └── config.properties.example  # 설정 파일 템플릿
 
 src/main/webapp/
@@ -144,26 +167,3 @@ src/main/webapp/
 
 4. **의존 라이브러리**
    - `src/main/webapp/WEB-INF/lib`에 필요한 jar(`mssql-jdbc`, `commons-fileupload`, `commons-io`, `cos`, `taglibs-standard-*`)를 직접 배치해야 합니다(라이브러리 jar는 저장소에 포함되어 있지 않습니다).
-
-## 모델 비교 벤치마크 (`src/main/java/bench/`)
-
-AI 챗봇/연관상품 추천에 어떤 모델·방식을 쓸지 실측 데이터로 결정하기 위해 만든 독립 실행 스크립트입니다. 웹앱 배포와는 무관하며, 커맨드라인에서 직접 실행합니다.
-
-- `ChatbotBenchmark.java` — 고정 질문 8개(음향성향/기기매칭/가격/스펙/배송/환각유도/범위이탈/오타) × 3회 반복으로 **Mistral Small / Gemini 2.5 Flash / Qwen 2.5 72B / Llama 3.3 70B**(Qwen·Llama는 OpenRouter 경유)를 동일 시스템 프롬프트로 호출해 응답시간·토큰 사용량·환각 여부를 CSV로 기록합니다.
-- `RetryBenchmark.java` — Mistral/Gemini 호출 간 딜레이를 두고 재실행할 때 사용(무료 티어 rate limit 회피).
-- 실행 예: `java -cp "build/classes;src/main/webapp/WEB-INF/lib/mssql-jdbc-13.4.0.jre11.jar" bench.ChatbotBenchmark`
-- 실행하려면 `config.properties`에 `mistral.api.key`, `gemini.api.key`, `openrouter.api.key`가 필요합니다(앱 실행 자체에는 `gemini.api.key`/`openrouter.api.key`가 불필요 — 벤치마크 전용).
-- 결과는 `benchmark_results/*.csv`에 저장되며 저장소에는 커밋되지 않습니다(`.gitignore`).
-
-**측정 결과 요약** (2026-09-03 기준, 상품 6개 소규모 카탈로그):
-
-| 모델 | 성공률 | 평균 응답시간 | 비고 |
-|---|---|---|---|
-| Mistral Small | 100% | 3.6초 | 범위 이탈 질문 완벽 거절, 가장 균형 잡힘 |
-| Gemini 2.5 Flash | 83% | 8.9초 | 무료 티어 rate limit으로 실패율 있음 |
-| Qwen 2.5 72B (OpenRouter) | ~96% | 20.4초 | 응답 중 중국어 혼입 1건, 범위 이탈 대응 불안정 |
-| Llama 3.3 70B (OpenRouter) | 100% | 12.0초 | 범위 이탈 질문에 실제 향수 브랜드를 추천(스코프 위반) |
-
-환각 테스트(카탈로그에 없는 제품 문의)는 4개 모델 모두 지어내지 않고 정직하게 답변해 통과했습니다.
-
-연관 상품 추천은 Gemini API 호출 대비 규칙 기반(같은 카테고리+가격 근접)이 **성공률 100% vs 33%, 응답속도 65배 이상 빠름(0.2초 vs 13~23초), 결과 결정적(동일 입력 → 항상 동일 출력)**으로 나타나 규칙 기반으로 채택했습니다(`dao/RuleBasedRecommendation.java`).
