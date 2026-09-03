@@ -78,6 +78,8 @@
             </svg>
             <span>장바구니</span>
         </a>
+
+        <button type="button" id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="다크모드 전환">🌙</button>
     </div>
 
     <nav class="category-nav">

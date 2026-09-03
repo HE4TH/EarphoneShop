@@ -12,7 +12,7 @@
 .container h1 {
     font-size: 3rem;
     font-weight: bold;
-    color: #111111;
+    color: var(--text-primary);
     margin-bottom: 40px;
     letter-spacing: -1px;
 }
@@ -21,7 +21,7 @@
     width: 80px !important;
     height: 80px !important;
     fill: none;
-    stroke: #0f172a;
+    stroke: var(--text-primary);
     stroke-width: 2.5 !important;
     stroke-linecap: round;
     stroke-linejoin: round;

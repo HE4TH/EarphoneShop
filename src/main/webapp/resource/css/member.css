@@ -5,7 +5,7 @@
     justify-content: center;
     align-items: center;
     padding: 60px 20px;
-    background-color: #ffffff;
+    background-color: var(--bg-primary);
     width: 100%;
     box-sizing: border-box;
     min-height: calc(100vh - 160px) !important;
@@ -14,7 +14,7 @@
 .member-card {
     width: 100%;
     max-width: 460px;
-    background-color: #f8fafc;
+    background-color: var(--bg-card);
     border-radius: 16px;
     padding: 40px 35px;
     box-sizing: border-box;
@@ -29,14 +29,14 @@
 .member-header h2 {
     font-size: 24px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: 1px;
     margin-bottom: 8px;
 }
 
 .member-header p {
     font-size: 13px;
-    color: #64748b;
+    color: var(--text-secondary);
     line-height: 1.4;
 }
 
@@ -51,7 +51,7 @@
 .input-group label {
     font-size: 14px;
     font-weight: 700;
-    color: #334155;
+    color: var(--text-primary);
     padding-left: 2px;
 }
 
@@ -63,10 +63,10 @@
     height: 46px;
     padding: 0 16px;
     border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
     font-size: 14px;
-    color: #0f172a;
+    color: var(--text-primary);
     box-sizing: border-box;
     transition: all 0.2s ease;
     letter-spacing: 0.5px !important;
@@ -123,10 +123,10 @@
     height: 46px !important;
     padding: 0 12px !important;
     border-radius: 8px !important;
-    border: 1px solid #cbd5e1 !important;
-    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-card) !important;
     font-size: 14px !important;
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
     cursor: pointer !important;
     outline: none !important;
     transition: border-color 0.2s ease;
@@ -149,7 +149,7 @@
     gap: 6px;
     cursor: pointer;
     font-size: 14px;
-    color: #475569;
+    color: var(--text-secondary);
 }
 
 .radio-label input[type="radio"] {
@@ -171,7 +171,7 @@
 .email-at {
     font-size: 14px !important;
     font-weight: 600 !important;
-    color: #94a3b8 !important;
+    color: var(--text-muted) !important;
     padding: 0 2px;
 }
 
@@ -180,10 +180,10 @@
     height: 46px !important;
     padding: 0 8px !important;
     border-radius: 8px !important;
-    border: 1px solid #cbd5e1 !important;
-    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-card) !important;
     font-size: 13px !important;
-    color: #334155 !important;
+    color: var(--text-primary) !important;
     cursor: pointer !important;
     outline: none !important;
     transition: border-color 0.2s ease;
@@ -209,10 +209,10 @@
     height: 46px !important;
     padding: 0 10px !important;
     border-radius: 8px !important;
-    border: 1px solid #cbd5e1 !important;
-    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-card) !important;
     font-size: 14px !important;
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
     cursor: pointer !important;
     outline: none !important;
     margin: 0 !important;
@@ -223,10 +223,10 @@
     flex: none !important;
     height: 46px !important;
     border-radius: 8px !important;
-    border: 1px solid #cbd5e1 !important;
-    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-card) !important;
     font-size: 14px !important;
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
     text-align: center !important;
     box-sizing: border-box !important;
     margin: 0 !important;
@@ -236,7 +236,7 @@
 .phone-dash {
     font-size: 25px !important;
     font-weight: 1000 !important;
-    color: #94a3b8 !important;
+    color: var(--text-muted) !important;
     padding: 0 4px !important;
     line-height: 46px !important;
 }
@@ -251,7 +251,7 @@
 #sample6_postcode {
     width: 120px !important;
     flex: none !important;
-    background-color: #f1f5f9 !important;
+    background-color: var(--bg-secondary) !important;
 }
 
 .btn-search-address {
@@ -272,7 +272,7 @@
 }
 
 #sample6_address {
-    background-color: #f1f5f9 !important;
+    background-color: var(--bg-secondary) !important;
     margin-bottom: 6px;
 }
 
@@ -311,7 +311,7 @@
 .btn-link-login {
     text-align: center;
     font-size: 13px;
-    color: #64748b;
+    color: var(--text-secondary);
     text-decoration: none;
     padding: 4px 0;
     transition: color 0.2s ease;
@@ -343,7 +343,7 @@
 }
 
 .join-modal-card {
-    background-color: #ffffff !important;
+    background-color: var(--bg-card) !important;
     width: 100%;
     max-width: 380px;
     border-radius: 16px !important;
@@ -369,14 +369,14 @@
 .join-modal-card h3 {
     font-size: 18px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: 0.5px;
     margin-bottom: 10px;
 }
 
 .join-modal-card p {
     font-size: 13.5px;
-    color: #64748b;
+    color: var(--text-secondary);
     line-height: 1.5;
     margin-bottom: 24px;
 }
@@ -403,8 +403,8 @@
    [추가] 최종 결제 페이지(order.jsp) 프리미엄 명세서 스타일 보정
    ========================================================================== */
 .order-summary-zone {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 24px;
     text-align: left;
@@ -414,7 +414,7 @@
 .order-sub-title {
     font-size: 16px !important;
     font-weight: 800 !important;
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
     margin-bottom: 16px !important;
     letter-spacing: -0.3px;
     text-align: left;
@@ -429,17 +429,17 @@
 }
 
 .order-mini-table th {
-    color: #64748b !important;
+    color: var(--text-secondary) !important;
     font-weight: 600 !important;
     padding: 10px 0 !important;
-    border-bottom: 2px solid #e2e8f0 !important;
+    border-bottom: 2px solid var(--border-color) !important;
     text-align: left;
 }
 
 .order-mini-table td {
     padding: 14px 0 !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    color: #334155;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-primary);
     text-align: left;
 }
 
@@ -449,7 +449,7 @@
     padding-top: 20px !important;
     font-size: 16px !important;
     font-weight: 800 !important;
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
 }
 
 /* 주소 검색창 레이아웃 가드 */

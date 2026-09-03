@@ -27,6 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 상품 수정</title>
     <link rel="stylesheet" href="resource/style.css">
+    <script src="resource/js/theme.js"></script>
     <style>
         body { background-color: #f8fafc; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; box-sizing: border-box; }
         .admin-container { width: 90%; max-width: 700px; margin: 40px auto; padding-bottom: 60px; box-sizing: border-box; }

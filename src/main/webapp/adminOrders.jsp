@@ -30,6 +30,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 주문 관리</title>
     <link rel="stylesheet" href="resource/style.css">
+    <script src="resource/js/theme.js"></script>
     <style>
         body { background-color: #f8fafc; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
         .admin-container { width: 92%; max-width: 1200px; margin: 40px auto; padding-bottom: 60px; }

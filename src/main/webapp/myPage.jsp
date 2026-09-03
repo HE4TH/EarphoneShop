@@ -60,6 +60,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 마이페이지</title>
     <link rel="stylesheet" href="resource/style.css">
+    <script src="resource/js/theme.js"></script>
     <style>
         .mypage-layout { display: flex; gap: 30px; margin-top: 30px; }
         .mypage-sidebar { width: 200px; flex-shrink: 0; }

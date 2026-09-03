@@ -8,16 +8,16 @@
     max-width: 1240px;
     margin: 40px auto 0 auto !important;
     padding: 0 20px 6px 20px !important;
-    border-bottom: 2px solid #1e293b !important;
+    border-bottom: 2px solid var(--text-primary) !important;
     box-sizing: border-box;
 }
 
 .product-list-header .list-title {
     margin: 0 !important;
-    padding: 0 0 10px 0 !important; 
+    padding: 0 0 10px 0 !important;
     font-size: 28px;
     font-weight: bold;
-    color: #111111;
+    color: var(--text-primary);
     letter-spacing: -0.5px;
     line-height: 1.2 !important;
 }
@@ -38,11 +38,11 @@
 
 .filter-group select {
     padding: 6px 10px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 12px;
-    color: #334155;
-    background-color: #ffffff;
+    color: var(--text-primary);
+    background-color: var(--bg-card);
 }
 
 .sort-filter-group {
@@ -54,14 +54,14 @@
 }
 
 .sort-item {
-    color: #64748b;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 700;
     transition: color 0.2s ease;
 }
 
 .sort-item:hover {
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .sort-item.active {
@@ -70,7 +70,7 @@
 }
 
 .sort-divider {
-    color: #cbd5e1;
+    color: var(--border-color);
     margin: 0 10px;
     font-size: 11px;
 }
@@ -92,8 +92,8 @@
 
 /* 🎯 [개조] 개별 상품 카드 (순정 디자인 보존 및 쏠림 제거) */
 .shop-product-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 24px;
     /* 🌟 주석 처리/삭제: Grid 환경에서는 width와 margin을 고정하면 핏이 깨집니다.
@@ -108,7 +108,7 @@
     display: flex;
     flex-direction: column;
     vertical-align: top;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--card-shadow);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease-in-out, border-color 0.25s ease-in-out !important;
     text-decoration: none;
     color: inherit;
@@ -127,7 +127,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #ffffff;
+    background-color: var(--bg-secondary);
     margin-bottom: 20px;
 }
 
@@ -139,7 +139,7 @@
 
 .shop-product-card .prod-brand {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0 0 4px 0;
     font-weight: 600;
     text-transform: uppercase;
@@ -149,7 +149,7 @@
 .shop-product-card .prod-title {
     font-size: 18px;
     font-weight: bold;
-    color: #1a202c;
+    color: var(--text-primary);
     margin-bottom: 8px;
     margin-top: 0;
     text-align: center;
@@ -196,9 +196,9 @@
     min-width: 34px;
     height: 34px;
     padding: 0 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    color: #64748b;
+    color: var(--text-secondary);
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
@@ -206,8 +206,8 @@
 }
 
 .page-item:hover {
-    border-color: #94a3b8;
-    color: #1e293b;
+    border-color: var(--text-muted);
+    color: var(--text-primary);
 }
 
 .page-item.active {

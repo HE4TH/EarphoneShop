@@ -27,6 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코드 사운드 | 관리자 모드</title>
     <link rel="stylesheet" href="resource/style.css">
+    <script src="resource/js/theme.js"></script>
     
     <style>
         body { background-color: #f8fafc; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; box-sizing: border-box; }
