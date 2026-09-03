@@ -41,6 +41,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><%= util.HtmlUtil.escape(earphone.getpName()) %></title>
 <link href="resource/style.css" rel="stylesheet" type="text/css">
+<script src="resource/js/theme.js"></script>
 </head>
 <body>
 

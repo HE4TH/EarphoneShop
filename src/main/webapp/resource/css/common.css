@@ -1,10 +1,39 @@
 @charset "UTF-8";
 
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-card: #ffffff;
+    --text-primary: #111111;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    --border-color: #e5e7eb;
+    --header-bg: #ffffff;
+    --header-border: #e5e7eb;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --accent-color: #007bff;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #0f0f13;
+    --bg-secondary: #1a1a24;
+    --bg-card: #1e1e2e;
+    --text-primary: #f1f1f1;
+    --text-secondary: #aaaaaa;
+    --text-muted: #666666;
+    --border-color: #2e2e3e;
+    --header-bg: #13131a;
+    --header-border: #2e2e3e;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    --accent-color: #007bff;
+}
+
 body {
-    background-color: #ffffff;
+    background-color: var(--bg-primary);
     font-family: 'Malgun Gothic', sans-serif;
     margin: 0;
     padding: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* 상단 내비게이션 바 */
@@ -15,7 +44,7 @@ body {
     gap: 20px;
     height: 70px;
     padding: 0 40px;
-    background-color: #ffffff;
+    background-color: var(--header-bg);
     box-shadow: 0 1px 5px rgba(0,0,0,0.05);
     flex-shrink: 0;
 }
@@ -23,7 +52,7 @@ body {
 .header a {
     display: flex;
     align-items: center;
-    color: #333333;
+    color: var(--text-secondary);
     text-decoration: none;
     font-size: 14px;
 }
@@ -33,7 +62,20 @@ body {
 }
 
 .header a:hover {
-    color: #007bff;
+    color: var(--accent-color);
+}
+
+/* 다크모드 토글 버튼 */
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 헤더 2단: 카테고리 탭 nav바 */
@@ -43,8 +85,8 @@ body {
     gap: 8px;
     height: 46px;
     padding: 0 40px;
-    background-color: #ffffff;
-    border-top: 1px solid #f1f5f9;
+    background-color: var(--header-bg);
+    border-top: 1px solid var(--header-border);
     box-shadow: 0 1px 5px rgba(0,0,0,0.05);
 }
 
@@ -53,7 +95,7 @@ body {
     align-items: center;
     height: 100%;
     padding: 0 4px;
-    color: #64748b;
+    color: var(--text-secondary);
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
@@ -63,12 +105,12 @@ body {
 }
 
 .category-nav-item:hover {
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .category-nav-item.active {
-    color: #007bff;
-    border-bottom-color: #007bff;
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
 }
 
 /* 상단 좌측 브랜드 로고 */
@@ -77,7 +119,7 @@ body {
     align-items: center !important;
     gap: 8px;
     text-decoration: none;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 800;
     font-size: 18px;
     letter-spacing: -0.5px;
@@ -89,7 +131,7 @@ body {
     width: 28px;
     height: 28px;
     fill: none;
-    stroke: #1e293b;
+    stroke: var(--text-primary);
     stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -106,13 +148,17 @@ body {
     color: #007bff;
 }
 
+.icon-cup {
+    fill: var(--text-primary) !important;
+}
+
 /* 통합 알약 검색창 */
 .search-form {
     display: flex !important;
     align-items: center !important;
-    background-color: #f1f5f9 !important;
+    background-color: var(--bg-secondary) !important;
     border-radius: 24px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--border-color) !important;
     transition: all 0.2s ease !important;
     width: 240px !important;
     min-width: 240px !important;
@@ -126,7 +172,7 @@ body {
 }
 
 .search-form:focus-within {
-    background-color: #ffffff !important;
+    background-color: var(--bg-primary) !important;
     border-color: #007bff !important;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15) !important;
 }
@@ -135,7 +181,7 @@ body {
     border: none !important;
     background: none !important;
     outline: none !important;
-    color: #333333 !important;
+    color: var(--text-secondary) !important;
     font-size: 14px !important;
     font-weight: 400 !important;
     font-family: 'Malgun Gothic', sans-serif !important;
@@ -178,20 +224,20 @@ body {
     gap: 6px !important;
     font-size: 13px !important;
     font-weight: 500;
-    color: #475569 !important;
+    color: var(--text-secondary) !important;
 }
 
 .user-name-text {
     font-weight: 800 !important;
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
 }
 
 .logout-action-btn {
     font-size: 11.5px !important;
     font-weight: 700 !important;
-    color: #94a3b8 !important;
+    color: var(--text-muted) !important;
     text-decoration: none !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--border-color) !important;
     padding: 4px 10px !important;
     border-radius: 6px !important;
     transition: all 0.2s ease !important;
@@ -206,8 +252,8 @@ body {
 /* 하단 푸터 바 */
 .shop-footer {
     width: 100%;
-    background-color: #f8fafc;
-    border-top: 1px solid #e2e8f0;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
     padding: 30px 0;
     text-align: center;
     margin-top: 80px;
@@ -215,7 +261,7 @@ body {
 
 .shop-footer p {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
     font-weight: 500;
 }
