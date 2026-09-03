@@ -305,11 +305,12 @@
 	        event.currentTarget.classList.add('active');
 	    }
 
-	    // 스크롤 탑 기능 제어
+	    // 스크롤 탑 기능 제어 + 스크롤 위치에 따른 탭 자동 전환
 	    window.onscroll = function() {
 	        scrollFunction();
+	        updateActiveTabOnScroll();
 	    };
-	
+
 	    function scrollFunction() {
 	        var topBtn = document.getElementById("scrollTopBtn");
 	        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
@@ -317,6 +318,25 @@
 	        } else {
 	            topBtn.classList.remove("show");
 	        }
+	    }
+
+	    // 스크롤 위치가 어느 섹션(상품상세/구매후기/Q&A)을 지나는지에 따라 상단 탭의 active 상태를 자동 전환
+	    function updateActiveTabOnScroll() {
+	        var sectionIds = ['#product-desc', '#product-review', '#product-qna'];
+	        var stickyTabHeight = 90;
+	        var activeIndex = 0;
+
+	        for (var i = 0; i < sectionIds.length; i++) {
+	            var section = document.querySelector(sectionIds[i]);
+	            if (section && section.getBoundingClientRect().top <= stickyTabHeight) {
+	                activeIndex = i;
+	            }
+	        }
+
+	        var tabs = document.querySelectorAll('.tab-item');
+	        tabs.forEach(function(tab, idx) {
+	            tab.classList.toggle('active', idx === activeIndex);
+	        });
 	    }
 	
 	    function scrollToTop() {

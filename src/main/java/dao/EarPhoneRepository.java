@@ -95,8 +95,13 @@ public class EarPhoneRepository {
         ArrayList<Object> params = new ArrayList<Object>();
 
         if (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("ALL")) {
-            sql.append(" AND UPPER(category) = UPPER(?)");
-            params.add(category.trim());
+            if (category.equalsIgnoreCase("ANC")) {
+                // 노이즈캔슬링: category 컬럼이 아니라 wirelessAncSupported(boolean) 컬럼으로 필터링
+                sql.append(" AND wirelessAncSupported = 1");
+            } else {
+                sql.append(" AND UPPER(category) = UPPER(?)");
+                params.add(category.trim());
+            }
         }
         if (brand != null && !brand.trim().isEmpty() && !brand.equalsIgnoreCase("ALL")) {
             sql.append(" AND brand = ?");

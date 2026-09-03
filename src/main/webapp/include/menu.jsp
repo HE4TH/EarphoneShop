@@ -3,6 +3,12 @@
     // 로그인 성공 시 processLogin.jsp가 세션에 저장한 아이디와 이름을 조회
     String sessionUserId = (String) session.getAttribute("userId");
     String sessionUserName = (String) session.getAttribute("userName");
+
+    // 현재 페이지의 category 파라미터로 카테고리 탭 active 여부 판별 (없으면 "전체"로 간주)
+    String currentCategory = request.getParameter("category");
+    if (currentCategory == null || currentCategory.trim().isEmpty()) {
+        currentCategory = "ALL";
+    }
 %>
 
     <div class="header">
@@ -73,3 +79,10 @@
             <span>장바구니</span>
         </a>
     </div>
+
+    <nav class="category-nav">
+        <a href="products.jsp" class="category-nav-item <%= currentCategory.equalsIgnoreCase("ALL") ? "active" : "" %>">전체</a>
+        <a href="products.jsp?category=WIRED" class="category-nav-item <%= currentCategory.equalsIgnoreCase("WIRED") ? "active" : "" %>">유선</a>
+        <a href="products.jsp?category=WIRELESS" class="category-nav-item <%= currentCategory.equalsIgnoreCase("WIRELESS") ? "active" : "" %>">무선</a>
+        <a href="products.jsp?category=ANC" class="category-nav-item <%= currentCategory.equalsIgnoreCase("ANC") ? "active" : "" %>">노이즈캔슬링</a>
+    </nav>

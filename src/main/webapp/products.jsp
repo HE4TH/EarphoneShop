@@ -129,6 +129,8 @@
 	        pageTitle = "전체 상품 목록";
 	    } else if (category.equalsIgnoreCase("WIRELESS")) {
 	        pageTitle = "무선 이어폰";
+	    } else if (category.equalsIgnoreCase("ANC")) {
+	        pageTitle = "노이즈캔슬링 이어폰";
 	    } else {
 	        pageTitle = "유선 이어폰";
 	    }

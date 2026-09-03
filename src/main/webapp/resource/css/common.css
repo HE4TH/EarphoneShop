@@ -36,6 +36,41 @@ body {
     color: #007bff;
 }
 
+/* 헤더 2단: 카테고리 탭 nav바 */
+.category-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 46px;
+    padding: 0 40px;
+    background-color: #ffffff;
+    border-top: 1px solid #f1f5f9;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+}
+
+.category-nav-item {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 4px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.category-nav-item:hover {
+    color: #1e293b;
+}
+
+.category-nav-item.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+
 /* 상단 좌측 브랜드 로고 */
 .logo-link {
     display: flex;
@@ -247,6 +282,19 @@ body {
 
     .user-welcome-info {
         display: none !important;
+    }
+
+    .category-nav {
+        padding: 0 16px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox: 스크롤바 숨김 */
+        -ms-overflow-style: none; /* IE/Edge: 스크롤바 숨김 */
+    }
+
+    .category-nav::-webkit-scrollbar {
+        display: none; /* Chrome/Safari: 스크롤바 숨김 */
     }
 
     #scrollTopBtn {

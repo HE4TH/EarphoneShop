@@ -143,15 +143,15 @@
 
                 String aiAnswer = rawJson.substring(startIdx, endIdx);
 
-                // 이스케이프 문자 복원 및 HTML 줄바꿈 태그 변환
+                // 이스케이프 문자 복원 (클라이언트에서 textContent로 렌더링하므로 실제 개행 문자로 복원)
                 aiAnswer = aiAnswer.replace("\\u0026", "&")
-                                   .replace("\\n", "<br>")
+                                   .replace("\\n", "\n")
                                    .replace("\\\"", "\"")
                                    .replace("\\\'", "'")
-                                   .replace("**", ""); 
+                                   .replace("**", "");
 
                 // AI 답변 누적 시에도 안전 가드 처리 후 적치
-                String cleanAiAnswer = aiAnswer.replace("<br>", " ").replace("\\", "\\\\").replace("\"", "\\\"");
+                String cleanAiAnswer = aiAnswer.replace("\n", " ").replace("\\", "\\\\").replace("\"", "\\\"");
                 messagesList.add("{\"role\": \"assistant\", \"content\": \"" + cleanAiAnswer + "\"}");
                 session.setAttribute(chatHistoryKey, messagesList);
                                    
