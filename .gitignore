@@ -13,6 +13,9 @@ src/main/webapp/WEB-INF/lib/
 # Local secrets (DB 접속정보, API 키) - config.properties.example 참고
 src/main/java/config.properties
 
+# 모델/추천 비교 벤치마크 결과 (로컬 실험 산출물, 저장소에 올리지 않음)
+benchmark_results/
+
 # OS / editor
 .DS_Store
 Thumbs.db

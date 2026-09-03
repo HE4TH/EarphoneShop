@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="dao.EarPhoneRepository"%>
 <%@ page import="dao.ReviewRepository"%>
+<%@ page import="dao.RuleBasedRecommendation"%>
 <%@ page import="dto.EarPhone"%>
 <%@ page import="dto.Review"%>
 <%@ page import="java.text.DecimalFormat"%>
@@ -28,6 +29,9 @@
     double avgRating = reviewRepo.getAverageRating(pId);
     SimpleDateFormat reviewSdf = new SimpleDateFormat("yyyy-MM-dd");
     String sessionUserId = (String) session.getAttribute("userId");
+
+    // 3. 연관 상품 추천 (같은 카테고리 내 가격이 가장 비슷한 상품 4개)
+    java.util.List<EarPhone> recommendedList = RuleBasedRecommendation.recommendProducts(earphone);
 %>
 
 <!DOCTYPE html>
@@ -168,6 +172,26 @@
 		<h3>상품문의 (Q&A)</h3>
 		<p>상품에 대해 궁금한 점이 있으신가요? 문의글을 남겨주시면 판매자가 정성껏 답변해 드립니다.</p>
 	</div>
+
+	<% if (!recommendedList.isEmpty()) { %>
+	<div class="related-products-section">
+		<h3>함께 보면 좋은 상품</h3>
+		<div class="related-products-grid">
+			<% for (EarPhone rp : recommendedList) {
+				String rpFormattedPrice = df.format(rp.getPrice());
+			%>
+				<a href="detail.jsp?productId=<%= rp.getProductId() %>" class="related-product-card">
+					<div class="related-product-img-box">
+						<img src="resource/main/<%= util.HtmlUtil.escape(rp.getpImage()) %>" alt="<%= util.HtmlUtil.escape(rp.getpName()) %>">
+					</div>
+					<p class="related-product-brand"><%= util.HtmlUtil.escape(rp.getBrand()) %></p>
+					<p class="related-product-name"><%= util.HtmlUtil.escape(rp.getpName()) %></p>
+					<p class="related-product-price"><%= rpFormattedPrice %>원</p>
+				</a>
+			<% } %>
+		</div>
+	</div>
+	<% } %>
 
 	<button type="button" id="scrollTopBtn" onclick="scrollToTop()">
 		<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">

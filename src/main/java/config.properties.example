@@ -6,4 +6,7 @@ mistral.api.key=YOUR_MISTRAL_API_KEY
 
 gemini.api.key=YOUR_GEMINI_API_KEY
 
+# 챗봇/추천 모델 비교 벤치마크용 (bench 패키지에서만 사용, 없어도 앱 실행엔 지장 없음)
+openrouter.api.key=YOUR_OPENROUTER_API_KEY
+
 upload.base.path=C:\\path\\to\\EarPhoneMarket\\src\\main\\webapp\\resource

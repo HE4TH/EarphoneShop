@@ -1,6 +1,6 @@
 # Code Sound (코드 사운드)
 
-Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플리케이션입니다. 상품 조회/검색/필터링, 장바구니, 주문/결제/배송상태/취소, 리뷰, 회원 관리, 관리자 페이지, AI 챗봇 상담, AI 상품 추천 등 커머스 사이트의 핵심 흐름을 직접 구현했습니다.
+Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플리케이션입니다. 상품 조회/검색/필터링, 장바구니, 주문/결제/배송상태/취소, 리뷰, 연관 상품 추천, 회원 관리, 관리자 페이지, AI 챗봇 상담 등 커머스 사이트의 핵심 흐름을 직접 구현했습니다.
 
 ## 기술 스택
 
@@ -13,7 +13,6 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 - **보안**: PBKDF2 비밀번호 해싱, HTML/JS 컨텍스트별 출력 이스케이프, CSRF 동기화 토큰, 인메모리 rate limiting (모두 JDK 표준 라이브러리만으로 직접 구현, 외부 의존성 없음)
 - **외부 API 연동**:
   - [Mistral AI](https://mistral.ai/) Chat Completions API — 상품 상세 페이지 AI 챗봇
-  - Google Gemini API — 연관 상품 AI 추천
   - Daum(카카오) Postcode 서비스 — 회원가입/주문/마이페이지 주소 검색
 
 ## 핵심 기능
@@ -35,23 +34,27 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 - 로그인한 사용자는 상품 상세 페이지에서 평점(1~5)과 후기를 남길 수 있습니다(`process/addReview.jsp`).
 - 상품별 리뷰 목록, 평균 평점, 리뷰 개수가 상세 페이지에 표시되고, 상품 목록의 "리뷰많은순" 정렬도 실제 리뷰 개수 기준으로 동작합니다.
 
-### 5. 상품 필터링 / 페이지네이션
+### 5. 연관 상품 추천 (규칙 기반)
+- 상품 상세 페이지 하단에 같은 카테고리 내에서 가격이 가장 비슷한 상품 4개를 "함께 보면 좋은 상품"으로 추천합니다(`dao/RuleBasedRecommendation.java`).
+- 원래는 Gemini API로 구현했었으나, `bench/` 패키지의 벤치마크 스크립트로 실측한 결과 무료 티어 rate limit으로 인한 잦은 실패(18회 중 12회, 67%), 호출마다 달라지는 비결정적 결과, 65배 느린 응답속도(13~23초 vs 0.2초)에 비해 추천 품질 차이가 거의 없어(성공 시 규칙기반과 결과 대부분 일치) 규칙 기반으로 교체했습니다.
+
+### 6. 상품 필터링 / 페이지네이션
 - 상품 목록과 검색 결과 모두 카테고리, 브랜드, 가격대(5만원 이하 ~ 30만원 이상 프리셋) 조합 필터링을 지원합니다(`EarPhoneRepository.getFilteredProducts()`).
 - 정렬(최신순/낮은가격순/높은가격순/리뷰많은순)과 필터가 함께 적용되며, 결과는 12개 단위로 페이지네이션됩니다.
 
-### 6. Mistral AI 챗봇
+### 7. Mistral AI 챗봇
 - `process/aiChatBotApi.jsp`가 Mistral AI의 `chat/completions` 엔드포인트(`mistral-small-latest` 모델)를 직접 HTTP로 호출합니다.
 - 현재 보고 있는 상품 정보와 DB에 저장된 전체 상품 목록을 시스템 프롬프트에 실시간으로 주입해, 챗봇이 실제 판매 중인 상품 안에서만 추천하도록 컨텍스트를 구성합니다.
 - 대화 이력은 상품별로 세션(`mistral_chat_history_{productId}`)에 누적 저장되어 문맥이 유지되며, 채팅 메시지는 `textContent` 기반으로 DOM에 삽입되어 사용자 입력이 스크립트로 실행되지 않도록 처리됩니다.
 
-### 7. Kakao(Daum) 주소 API 연동
+### 8. Kakao(Daum) 주소 API 연동
 - `join.jsp`, `order.jsp`, `myPage.jsp`에서 Daum Postcode 스크립트(`t1.daumcdn.net/mapjsapi/bundle/postcode`)를 팝업으로 띄워 우편번호/지번·도로명 주소를 검색해 폼에 자동 입력합니다.
 
-### 8. CSS 모듈화 / 반응형
+### 9. CSS 모듈화 / 반응형
 - `resource/style.css`가 진입점 역할을 하며 `@import`로 `common.css`, `main.css`, `products.css`, `detail.css`, `cart.css`, `member.css`, `chatbot.css`를 페이지 성격별로 분리해 관리합니다.
 - 각 CSS에 768px/480px 기준 `@media` 브레이크포인트가 적용되어 있어 모바일에서 헤더, 상품 그리드, 장바구니, 상세 페이지, 챗봇 창 등이 레이아웃을 재배치합니다.
 
-### 9. 보안
+### 10. 보안
 - **비밀번호 해싱**: PBKDF2WithHmacSHA256(120,000 iterations)로 해싱 후 저장(`util/PasswordUtil.java`), 평문 저장/비교 없음.
 - **XSS 방지**: DB/세션/쿼리파라미터에서 온 값을 출력할 때 `util/HtmlUtil.java`로 컨텍스트별(HTML 속성/본문, `<script>` 내부 JS 문자열) 이스케이프 처리.
 - **CSRF 방지**: 주문/취소/회원탈퇴/리뷰작성/상품등록·수정/주문상태변경 등 상태 변경 요청에 세션 기반 동기화 토큰 적용(`util/CsrfUtil.java`).
@@ -60,10 +63,9 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 - **오픈 리다이렉트 방지**: 로그인/로그아웃 후 이동 경로(`prevPage`)가 외부 URL이면 무시하고 내부 페이지로 강제.
 - **서버단 입력 검증**: 이메일 형식, 비밀번호 규칙(영문+숫자 8자 이상), 상품 가격/재고 음수 방지 등(`util/ValidationUtil.java`).
 
-### 10. 관리자 기능
+### 11. 관리자 기능
 - 상품 등록/수정/삭제 — 수정 시 이미지를 다시 올리지 않으면 기존 파일을 그대로 유지합니다(`adminEditProduct.jsp`, `process/processEditProduct.jsp`).
 - 전체 주문 조회 및 상태 변경 — 주문자, 구매 품목, 금액, 배송지를 한 화면에서 확인하고 상태(배송준비중/배송중/배송완료/취소됨)를 변경할 수 있습니다(`adminOrders.jsp`).
-- Gemini API를 활용한 상세페이지 연관 상품 AI 추천(`dao/EarPhoneRecommendation.java`).
 
 ### 그 외 기능
 - 회원가입/로그인/로그아웃/회원정보 수정/회원 탈퇴 (`join.jsp`, `login.jsp`, `myPage.jsp` 등)
@@ -74,9 +76,10 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 
 ```
 src/main/java/
-├── dao/                     # EarPhoneRepository, ReviewRepository, OrderRepository, EarPhoneRecommendation(AI 추천)
+├── dao/                     # EarPhoneRepository, ReviewRepository, OrderRepository, RuleBasedRecommendation(연관상품)
 ├── dto/                     # EarPhone, Review, Order, OrderItem
 ├── util/                    # DBConnection, ConfigLoader, PasswordUtil, HtmlUtil, CsrfUtil, RateLimiter, ValidationUtil
+├── bench/                   # 챗봇/추천 모델 비교 벤치마크 스크립트 (아래 "모델 비교 벤치마크" 참고)
 └── config.properties.example  # 설정 파일 템플릿
 
 src/main/webapp/
@@ -127,7 +130,6 @@ src/main/webapp/
    db.password=YOUR_DB_PASSWORD
 
    mistral.api.key=YOUR_MISTRAL_API_KEY
-   gemini.api.key=YOUR_GEMINI_API_KEY
 
    upload.base.path=C:\\path\\to\\EarPhoneMarket\\src\\main\\webapp\\resource
    ```
@@ -142,3 +144,26 @@ src/main/webapp/
 
 4. **의존 라이브러리**
    - `src/main/webapp/WEB-INF/lib`에 필요한 jar(`mssql-jdbc`, `commons-fileupload`, `commons-io`, `cos`, `taglibs-standard-*`)를 직접 배치해야 합니다(라이브러리 jar는 저장소에 포함되어 있지 않습니다).
+
+## 모델 비교 벤치마크 (`src/main/java/bench/`)
+
+AI 챗봇/연관상품 추천에 어떤 모델·방식을 쓸지 실측 데이터로 결정하기 위해 만든 독립 실행 스크립트입니다. 웹앱 배포와는 무관하며, 커맨드라인에서 직접 실행합니다.
+
+- `ChatbotBenchmark.java` — 고정 질문 8개(음향성향/기기매칭/가격/스펙/배송/환각유도/범위이탈/오타) × 3회 반복으로 **Mistral Small / Gemini 2.5 Flash / Qwen 2.5 72B / Llama 3.3 70B**(Qwen·Llama는 OpenRouter 경유)를 동일 시스템 프롬프트로 호출해 응답시간·토큰 사용량·환각 여부를 CSV로 기록합니다.
+- `RetryBenchmark.java` — Mistral/Gemini 호출 간 딜레이를 두고 재실행할 때 사용(무료 티어 rate limit 회피).
+- 실행 예: `java -cp "build/classes;src/main/webapp/WEB-INF/lib/mssql-jdbc-13.4.0.jre11.jar" bench.ChatbotBenchmark`
+- 실행하려면 `config.properties`에 `mistral.api.key`, `gemini.api.key`, `openrouter.api.key`가 필요합니다(앱 실행 자체에는 `gemini.api.key`/`openrouter.api.key`가 불필요 — 벤치마크 전용).
+- 결과는 `benchmark_results/*.csv`에 저장되며 저장소에는 커밋되지 않습니다(`.gitignore`).
+
+**측정 결과 요약** (2026-09-03 기준, 상품 6개 소규모 카탈로그):
+
+| 모델 | 성공률 | 평균 응답시간 | 비고 |
+|---|---|---|---|
+| Mistral Small | 100% | 3.6초 | 범위 이탈 질문 완벽 거절, 가장 균형 잡힘 |
+| Gemini 2.5 Flash | 83% | 8.9초 | 무료 티어 rate limit으로 실패율 있음 |
+| Qwen 2.5 72B (OpenRouter) | ~96% | 20.4초 | 응답 중 중국어 혼입 1건, 범위 이탈 대응 불안정 |
+| Llama 3.3 70B (OpenRouter) | 100% | 12.0초 | 범위 이탈 질문에 실제 향수 브랜드를 추천(스코프 위반) |
+
+환각 테스트(카탈로그에 없는 제품 문의)는 4개 모델 모두 지어내지 않고 정직하게 답변해 통과했습니다.
+
+연관 상품 추천은 Gemini API 호출 대비 규칙 기반(같은 카테고리+가격 근접)이 **성공률 100% vs 33%, 응답속도 65배 이상 빠름(0.2초 vs 13~23초), 결과 결정적(동일 입력 → 항상 동일 출력)**으로 나타나 규칙 기반으로 채택했습니다(`dao/RuleBasedRecommendation.java`).
