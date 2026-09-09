@@ -12,7 +12,7 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 - **파일 업로드**: `commons-fileupload`, `cos.jar` (상품 등록/수정 시 이미지 업로드, `multipart/form-data`)
 - **보안**: PBKDF2 비밀번호 해싱, HTML/JS 컨텍스트별 출력 이스케이프, CSRF 동기화 토큰, 인메모리 rate limiting (모두 JDK 표준 라이브러리만으로 직접 구현, 외부 의존성 없음)
 - **외부 API 연동**:
-  - [Mistral AI](https://mistral.ai/) Chat Completions API — 상품 상세 페이지 AI 챗봇
+  - [OpenRouter](https://openrouter.ai/) 경유 Claude Haiku 4.5 (`anthropic/claude-haiku-4.5`) — 상품 상세 페이지 AI 챗봇
   - Daum(카카오) Postcode 서비스 — 회원가입/주문/마이페이지 주소 검색
 
 ## 핵심 기능
@@ -42,10 +42,12 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 - 상품 목록과 검색 결과 모두 카테고리, 브랜드, 가격대(5만원 이하 ~ 30만원 이상 프리셋) 조합 필터링을 지원합니다(`EarPhoneRepository.getFilteredProducts()`).
 - 정렬(최신순/낮은가격순/높은가격순/리뷰많은순)과 필터가 함께 적용되며, 결과는 12개 단위로 페이지네이션됩니다.
 
-### 7. Mistral AI 챗봇
-- `process/aiChatBotApi.jsp`가 Mistral AI의 `chat/completions` 엔드포인트(`mistral-small-latest` 모델)를 직접 HTTP로 호출합니다.
-- 현재 보고 있는 상품 정보와 DB에 저장된 전체 상품 목록을 시스템 프롬프트에 실시간으로 주입해, 챗봇이 실제 판매 중인 상품 안에서만 추천하도록 컨텍스트를 구성합니다.
-- 대화 이력은 상품별로 세션(`mistral_chat_history_{productId}`)에 누적 저장되어 문맥이 유지되며, 채팅 메시지는 `textContent` 기반으로 DOM에 삽입되어 사용자 입력이 스크립트로 실행되지 않도록 처리됩니다.
+### 7. AI 챗봇 (OpenRouter · Claude Haiku 4.5)
+- `process/aiChatBotApi.jsp`가 OpenRouter의 `chat/completions` 엔드포인트(`anthropic/claude-haiku-4.5` 모델)를 OpenAI 호환 스키마로 직접 HTTP 호출합니다.
+- 원래는 Mistral AI(`mistral-small-latest`)를 직접 호출했으나, 무료 티어 rate limit(429)이 실서비스에서 지속적으로 발생해(수일간 성공률 0%) Gemini(구글 무료 티어, 프로젝트당 일일 20회 하드 캡)와 OpenRouter 경유 여러 모델(Qwen, Llama, DeepSeek, Claude 등)을 추가로 실측 비교 후 Claude Haiku 4.5로 교체했습니다. 자세한 수치는 아래 "모델 비교 벤치마크" 참고.
+- 현재 보고 있는 상품 정보와 DB에 저장된 전체 상품 목록을 시스템 프롬프트에 실시간으로 주입해, 챗봇이 실제 판매 중인 상품 안에서만 추천하도록 컨텍스트를 구성합니다. 카탈로그에 없는 제품이 언급되면 추가 설명(스펙·출처 등) 없이 "취급하지 않는다"고만 답하도록 프롬프트로 제약하지만, 이는 100% 강제되지는 않아(알려진 한계, 아래 참고) 향후 코드 단 필터링으로 보강할 수 있습니다.
+- 대화 이력은 상품별로 세션(`openrouter_chat_history_{productId}`)에 누적 저장되어 문맥이 유지되며, 채팅 메시지는 `textContent` 기반으로 DOM에 삽입되어 사용자 입력이 스크립트로 실행되지 않도록 처리됩니다.
+- 최대 3회 지수 백오프(1→2초) 재시도 로직이 포함되어 있어 일시적인 API 실패에 대응합니다.
 
 ### 8. Kakao(Daum) 주소 API 연동
 - `join.jsp`, `order.jsp`, `myPage.jsp`에서 Daum Postcode 스크립트(`t1.daumcdn.net/mapjsapi/bundle/postcode`)를 팝업으로 띄워 우편번호/지번·도로명 주소를 검색해 폼에 자동 입력합니다.
@@ -76,22 +78,33 @@ Java(JSP/Servlet) 기반으로 제작한 이어폰 전문 쇼핑몰 웹 애플�
 
 AI 챗봇/연관상품 추천에 어떤 모델·방식을 쓸지 실측 데이터로 결정하기 위해 만든 독립 실행 스크립트입니다. 웹앱 배포와는 무관하며, 커맨드라인에서 직접 실행합니다.
 
-- `ChatbotBenchmark.java` — 고정 질문 8개(음향성향/기기매칭/가격/스펙/배송/환각유도/범위이탈/오타) × 3회 반복으로 **Mistral Small / Gemini 2.5 Flash / Qwen 2.5 72B / Llama 3.3 70B**(Qwen·Llama는 OpenRouter 경유)를 동일 시스템 프롬프트로 호출해 응답시간·토큰 사용량·환각 여부를 CSV로 기록합니다.
-- `RetryBenchmark.java` — Mistral/Gemini 호출 간 딜레이를 두고 재실행할 때 사용(무료 티어 rate limit 회피).
-- 실행 예: `java -cp "build/classes;src/main/webapp/WEB-INF/lib/mssql-jdbc-13.4.0.jre11.jar" bench.ChatbotBenchmark`
-- 실행하려면 `config.properties`에 `mistral.api.key`, `gemini.api.key`, `openrouter.api.key`가 필요합니다(앱 실행 자체에는 `gemini.api.key`/`openrouter.api.key`가 불필요 — 벤치마크 전용).
+- `ChatbotBenchmark.java` — 고정 질문 8개(음향성향/기기매칭/가격/스펙/배송/환각유도/범위이탈/오타) × 3회 반복으로 여러 모델을 동일 시스템 프롬프트로 호출해 응답시간·토큰 사용량·환각 여부를 CSV로 기록합니다.
+- `RetryBenchmark.java` — Mistral/Gemini 호출 간 딜레이를 두고 재실행할 때 사용(무료 티어 rate limit 회피 검증용).
+- `QwenCheapTest.java` — OpenRouter 모델 하나를 `args[0]`으로 지정해 단독 실측(예: `java -cp build/classes bench.QwenCheapTest anthropic/claude-haiku-4.5`).
+- 실행하려면 `config.properties`에 `mistral.api.key`, `gemini.api.key`, `openrouter.api.key`가 필요합니다(앱 실행 자체에는 `openrouter.api.key`만 필요).
 - 결과는 `benchmark_results/*.csv`에 저장되며 저장소에는 커밋되지 않습니다(`.gitignore`).
 
-**측정 결과 요약** (2026-09-03 기준, 상품 6개 소규모 카탈로그):
+**측정 결과 요약** (2026-09-06~09 기준, 상품 6개 소규모 카탈로그, 질문 8개 × 3회 = 24콜 기준):
 
-| 모델 | 성공률 | 평균 응답시간 | 비고 |
-|---|---|---|---|
-| Mistral Small | 100% | 3.6초 | 범위 이탈 질문 완벽 거절, 가장 균형 잡힘 |
-| Gemini 2.5 Flash | 83% | 8.9초 | 무료 티어 rate limit으로 실패율 있음 |
-| Qwen 2.5 72B (OpenRouter) | ~96% | 20.4초 | 응답 중 중국어 혼입 1건, 범위 이탈 대응 불안정 |
-| Llama 3.3 70B (OpenRouter) | 100% | 12.0초 | 범위 이탈 질문에 실제 향수 브랜드를 추천(스코프 위반) |
+| 모델 | 성공률 | 평균 응답시간 | 비용(메시지당) | 환각 |
+|---|---|---|---|---|
+| Mistral Small | **0%** | — | 무료 | — |
+| Gemini 2.5 Flash (구글 직접) | 4~42% (변동) | 4.8초 | 무료 | 없음 |
+| Qwen 2.5 72B (OpenRouter) | 100% | 21.3초 | 유료 | **있음** (24건 중 17건) |
+| Llama 3.3 70B (OpenRouter) | 100% | 9.2초 | 유료(저가) | **있음** (24건 중 37건, 언어 혼입 동반) |
+| Qwen3.7-flash (OpenRouter) | 71% | 11.2초 | ~$0.0000 | 없음 |
+| Qwen3.8-27b (OpenRouter) | 100% | 14.7초 | ~$0.0023 | 없음 |
+| DeepSeek V4 Flash (OpenRouter) | 100% | 36.0초 | ~$0.0002 | 소량(2건) |
+| Gemini 3.8 Flash (OpenRouter) | 100% | 8.9초 | ~$0.0029 | 없음 |
+| Claude Sonnet 5 (OpenRouter) | 100% | 9.0초 | ~$0.0066 | 없음 |
+| **Claude Haiku 4.5 (OpenRouter)** | **100%** | **3.7초** | **~$0.0022** | 없음(벤치마크 기준) |
 
-환각 테스트(카탈로그에 없는 제품 문의)는 4개 모델 모두 지어내지 않고 정직하게 답변해 통과했습니다.
+**주요 발견**:
+- Mistral Small은 벤치마크 시점(2026-09-06~08)에 24콜 전부 429로 실패 — Mistral 공식 지원팀 확인 결과 무료 티어는 계정별이 아닌 전체 공유 용량 풀이라 새 계정/키로도 해결되지 않음.
+- Gemini 2.5 Flash(구글 API 직접 호출)의 실패는 `GenerateRequestsPerDayPerProjectPerModel-FreeTier` 쿼터(**프로젝트당 하루 20회**) 소진이 원인 — 분당 요청 제한이 아니라 일일 하드 캡이라 실서비스엔 부적합.
+- 성공률 100%였던 Qwen 2.5 72B, Llama 3.3 70B는 실제로는 카탈로그에 없는 경쟁사 제품명(소니 WF-1000XM4, 삼성 갤럭시 버즈 프로 등)을 실존하는 것처럼 지어내는 환각이 다수 발생 — 성공률만으로는 답변 신뢰도를 판단할 수 없음을 확인.
+- 최종적으로 **성공률·환각·속도·비용 전 항목에서 가장 균형 잡힌 Claude Haiku 4.5**(OpenRouter 경유)를 채택.
+- **알려진 한계**: 프롬프트로 "카탈로그 밖 제품은 부연 설명 없이 거절"을 지시해도 100% 강제되지 않음 — 실서비스에서 존재하지 않는 출처 URL을 인용하며 답변한 사례가 관측됨(프롬프트만으로는 불완전, 코드 단 필터링 보강이 필요할 수 있음).
 
 연관 상품 추천은 Gemini API 호출 대비 규칙 기반(같은 카테고리+가격 근접)이 **성공률 100% vs 33%, 응답속도 65배 이상 빠름(0.2초 vs 13~23초), 결과 결정적(동일 입력 → 항상 동일 출력)**으로 나타나 규칙 기반으로 채택했습니다(`dao/RuleBasedRecommendation.java`).
 
@@ -152,7 +165,7 @@ src/main/webapp/
    db.user=YOUR_DB_USER
    db.password=YOUR_DB_PASSWORD
 
-   mistral.api.key=YOUR_MISTRAL_API_KEY
+   openrouter.api.key=YOUR_OPENROUTER_API_KEY
 
    upload.base.path=C:\\path\\to\\EarPhoneMarket\\src\\main\\webapp\\resource
    ```

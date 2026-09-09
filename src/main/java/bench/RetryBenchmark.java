@@ -16,6 +16,7 @@ public class RetryBenchmark {
 
     private static final int REPEAT_PER_QUESTION = 3;
     private static final long MISTRAL_DELAY_MS = 3000; // rate limit(429) 회피용 호출 간 대기
+    private static final long GEMINI_DELAY_MS = 3000; // 실제 사용 패턴에 가깝게 호출 간 대기
 
     public static void main(String[] args) throws Exception {
         String mistralKey = ConfigLoader.get("mistral.api.key");
@@ -44,6 +45,7 @@ public class RetryBenchmark {
                     ModelResponse res = ChatModelClient.callGemini(geminiKey, systemPrompt, q[1]);
                     writeRow(w, "gemini-2.5-flash", q[0], q[1], i, res);
                     System.out.println("gemini | " + q[0] + " | iter " + i + " | " + res.latencyMs + "ms | http=" + res.httpStatus);
+                    Thread.sleep(GEMINI_DELAY_MS);
                 }
             }
         }

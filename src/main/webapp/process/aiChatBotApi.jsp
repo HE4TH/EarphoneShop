@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.io.*, java.net.*, java.util.*" %>
+<%@ page import="java.util.regex.Pattern, java.util.regex.Matcher" %>
 <%@ page import="dao.EarPhoneRepository" %>
 <%@ page import="dto.EarPhone" %>
 <%
@@ -64,20 +65,21 @@
         databaseRecommendationContext = "";
     }
 
-    // 3. 상품별 대화 이력을 세션에 배열 형태로 저장
-    String chatHistoryKey = "mistral_chat_history_" + productId;
+    // 3. 상품별 대화 이력을 세션에 배열 형태로 저장 (OpenAI 호환 스키마: system/user/assistant 역할)
+    String chatHistoryKey = "openrouter_chat_history_" + productId;
     ArrayList<String> messagesList = (ArrayList<String>) session.getAttribute(chatHistoryKey);
-    
+
     if (messagesList == null) {
         messagesList = new ArrayList<String>();
-        
+
         // 시스템 프롬프트에 실시간 DB 정보를 주동으로 결합하여 주입
         String sysPrompt = "당신은 음향기기 쇼핑몰 '코드 사운드'의 친절하고 전문적인 AI 쇼핑 매니저입니다. "
                          + "절대 다른 사이트의 가짜 제품을 지어내지 마세요. "
                          + "유저가 다른 제품 추천을 요구하면, 제공되는 [우리 쇼핑몰에서 판매 중인 전체 상품 리스트] 중에서만 골라서 공손한 한국어로 추천 리스트를 만들어 답변하세요. "
-                         + prodInfoContext 
+                         + "유저가 [우리 쇼핑몰에서 판매 중인 전체 상품 리스트]에 없는 특정 제품명을 언급하면, 그 제품이 실존하는지와 무관하게 스펙이나 평판 등 추가 설명은 절대 덧붙이지 말고 \"저희 코드 사운드에서는 취급하지 않는 상품입니다\"라고만 정중하게 답변하세요. "
+                         + prodInfoContext
                          + databaseRecommendationContext;
-        
+
         // JSON 파싱 규칙 파괴 방지를 위한 이스케이프 안전 가드 처리
         String cleanSysPrompt = sysPrompt.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
         messagesList.add("{\"role\": \"system\", \"content\": \"" + cleanSysPrompt + "\"}");
@@ -87,89 +89,118 @@
     String cleanUserMsg = userMessage.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
     messagesList.add("{\"role\": \"user\", \"content\": \"" + cleanUserMsg + "\"}");
 
-    // 4. Mistral AI 엔드포인트 및 API 키 설정 (config.properties에서 로드)
-    String apiKey = util.ConfigLoader.get("mistral.api.key");
-    String apiURL = "https://api.mistral.ai/v1/chat/completions";
+    // 4. OpenRouter 경유 Claude Haiku 4.5 엔드포인트 및 API 키 설정 (config.properties에서 로드)
+    String apiKey = util.ConfigLoader.get("openrouter.api.key");
+    String apiURL = "https://openrouter.ai/api/v1/chat/completions";
 
-    BufferedReader br = null;
-    OutputStream os = null;
-    HttpURLConnection conn = null;
+    // 세션 내부 배열 요소 결합
+    StringBuilder jsonMessages = new StringBuilder("[");
+    for (int i = 0; i < messagesList.size(); i++) {
+        jsonMessages.append(messagesList.get(i));
+        if (i < messagesList.size() - 1) jsonMessages.append(",");
+    }
+    jsonMessages.append("]");
 
-    try {
-        URL url = new URL(apiURL);
-        conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        conn.setRequestProperty("Authorization", "Bearer " + apiKey); 
-        conn.setDoOutput(true);
+    String jsonPayload = "{"
+        + "\"model\": \"anthropic/claude-haiku-4.5\","
+        + "\"messages\": " + jsonMessages.toString()
+        + "}";
 
-        // 세션 내부 배열 요소 결합
-        StringBuilder jsonMessages = new StringBuilder("[");
-        for (int i = 0; i < messagesList.size(); i++) {
-            jsonMessages.append(messagesList.get(i));
-            if (i < messagesList.size() - 1) jsonMessages.append(",");
-        }
-        jsonMessages.append("]");
+    // 벤치마크 결과 성공률 100%였지만, 외부 API 호출은 언제든 일시적으로 실패할 수 있어 재시도 로직 유지
+    int maxAttempts = 3;
+    long backoffMs = 1000;
 
-        String jsonPayload = "{"
-            + "\"model\": \"mistral-small-latest\","
-            + "\"messages\": " + jsonMessages.toString() + ","
-            + "\"stream\": false"
-            + "}";
+    int responseCode = -1;
+    String rawJson = null;
+    String lastErrorBody = "";
 
-        // 데이터 전송
-        os = conn.getOutputStream();
-        os.write(jsonPayload.getBytes("UTF-8"));
-        os.flush();
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+        BufferedReader br = null;
+        OutputStream os = null;
+        HttpURLConnection conn = null;
 
-        int responseCode = conn.getResponseCode();
-        if (responseCode == 200) { 
-            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            StringBuilder responseSB = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                responseSB.append(line);
-            }
+        try {
+            URL url = new URL(apiURL);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+            conn.setDoOutput(true);
 
-            String rawJson = responseSB.toString();
-            
-            // Mistral 응답 JSON에서 content 값 파싱
-            if (rawJson.contains("\"content\":\"")) {
-                int startIdx = rawJson.indexOf("\"content\":\"") + 11;
-                
-                int endIdx = rawJson.indexOf("\",\"tool_calls\"", startIdx);
-                if (endIdx < 0) endIdx = rawJson.indexOf("\"},\"finish_reason\"", startIdx);
-                if (endIdx < 0) endIdx = rawJson.indexOf("\"}", startIdx);
+            os = conn.getOutputStream();
+            os.write(jsonPayload.getBytes("UTF-8"));
+            os.flush();
 
-                String aiAnswer = rawJson.substring(startIdx, endIdx);
+            responseCode = conn.getResponseCode();
 
-                // 이스케이프 문자 복원 (클라이언트에서 textContent로 렌더링하므로 실제 개행 문자로 복원)
-                aiAnswer = aiAnswer.replace("\\u0026", "&")
-                                   .replace("\\n", "\n")
-                                   .replace("\\\"", "\"")
-                                   .replace("\\\'", "'")
-                                   .replace("**", "");
-
-                // AI 답변 누적 시에도 안전 가드 처리 후 적치
-                String cleanAiAnswer = aiAnswer.replace("\n", " ").replace("\\", "\\\\").replace("\"", "\\\"");
-                messagesList.add("{\"role\": \"assistant\", \"content\": \"" + cleanAiAnswer + "\"}");
-                session.setAttribute(chatHistoryKey, messagesList);
-                                   
-                out.print(aiAnswer.trim());
+            if (responseCode == 200) {
+                br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                StringBuilder responseSB = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    responseSB.append(line);
+                }
+                rawJson = responseSB.toString();
+                break; // 성공 -> 재시도 루프 종료
             } else {
-                out.print("🤖 미스트랄 응답 데이터 파싱 중 규격 꼬임이 발생했습니다.");
-            }
-        } else {
-            System.out.println("❌ Mistral API 거절 발생! 에러 응답 코드: " + responseCode);
-            out.print("⚠️ [Mistral 에러 " + responseCode + "] API 요청이 거절되었습니다. 콘솔 로그를 확인해 주세요.");
-        }
+                // 실패 사유 확인용: 에러 응답 본문 읽기
+                try {
+                    BufferedReader ebr = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                    StringBuilder ebSb = new StringBuilder();
+                    String eLine;
+                    while ((eLine = ebr.readLine()) != null) ebSb.append(eLine);
+                    ebr.close();
+                    lastErrorBody = ebSb.toString();
+                } catch (Exception ignore) {}
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        out.print("⚠️ 미스트랄 클라우드 신경망 인프라 네트워크 연결에 실패했습니다.");
-    } finally {
-        if (os != null) try { os.close(); } catch(Exception e) {}
-        if (br != null) try { br.close(); } catch(Exception e) {}
-        if (conn != null) conn.disconnect();
+                System.out.println("❌ OpenRouter API 거절 (시도 " + attempt + "/" + maxAttempts + ") 응답코드: " + responseCode + " / " + lastErrorBody);
+
+                boolean retryable = (responseCode == 429 || responseCode >= 500);
+                if (retryable && attempt < maxAttempts) {
+                    Thread.sleep(backoffMs);
+                    backoffMs *= 2;
+                } else {
+                    break; // 재시도 불가능하거나 마지막 시도 -> 종료
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (os != null) try { os.close(); } catch(Exception e) {}
+            if (br != null) try { br.close(); } catch(Exception e) {}
+            if (conn != null) conn.disconnect();
+        }
+    }
+
+    // OpenRouter(OpenAI 호환) 응답 JSON에서 choices[0].message.content 값을 정규식으로 파싱
+    String aiAnswer = null;
+    if (responseCode == 200 && rawJson != null) {
+        Pattern contentPattern = Pattern.compile("\"content\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
+        Matcher contentMatcher = contentPattern.matcher(rawJson);
+        if (contentMatcher.find()) {
+            aiAnswer = contentMatcher.group(1);
+        }
+    }
+
+    if (responseCode == 200 && aiAnswer != null) {
+        // 이스케이프 문자 복원 (클라이언트에서 textContent로 렌더링하므로 실제 개행 문자로 복원)
+        aiAnswer = aiAnswer.replace("\\u0026", "&")
+                           .replace("\\n", "\n")
+                           .replace("\\\"", "\"")
+                           .replace("\\\'", "'")
+                           .replace("**", "");
+
+        // AI 답변 누적 시에도 안전 가드 처리 후 적치
+        String cleanAiAnswer = aiAnswer.replace("\n", " ").replace("\\", "\\\\").replace("\"", "\\\"");
+        messagesList.add("{\"role\": \"assistant\", \"content\": \"" + cleanAiAnswer + "\"}");
+        session.setAttribute(chatHistoryKey, messagesList);
+
+        out.print(aiAnswer.trim());
+    } else if (responseCode == 429) {
+        out.print("🤖 지금 요청이 많아 잠시 답변이 지연되고 있어요. 몇 초 후 다시 물어봐 주세요!");
+    } else if (responseCode == 200) {
+        out.print("🤖 응답 데이터 파싱 중 규격 꼬임이 발생했습니다.");
+    } else {
+        out.print("⚠️ [API 에러 " + responseCode + "] API 요청이 거절되었습니다. 콘솔 로그를 확인해 주세요.");
     }
 %>
