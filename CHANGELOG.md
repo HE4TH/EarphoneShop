@@ -62,6 +62,18 @@
 - **실측 결과**: Mistral이 가장 균형(성공률100%, 3.6초, 범위이탈 질문 완벽 거절). Gemini는 무료티어 rate limit으로 실패율 있음(83%). Qwen/Llama는 OpenRouter 경유라 3~5배 느림, Llama는 범위 이탈 질문(향수 추천)에 실제 브랜드를 추천해버리는 스코프 위반 발견. 환각 테스트(카탈로그에 없는 제품 문의)는 4개 모델 전부 통과.
 - 연관상품 추천 자체는 Gemini(성공률33%, 13~23초, 비결정적) vs 규칙기반(성공률100%, 0.2초, 결정적)을 비교해 **규칙기반 채택** → `dao/RuleBasedRecommendation.java` 신설, `detail.jsp`에 "함께 보면 좋은 상품" 섹션으로 **처음 실제 연결**.
 
+### 7. 재고 차감 동시성·트랜잭션 수정 (2026-11-25)
+
+- **발견한 문제**
+  - `EarPhoneRepository.updateStock()`이 SELECT로 재고를 확인한 뒤 별도 UPDATE(`stock = stock - ?`, 재고 조건 없음)로 차감 → 두 주문이 동시에 들어오면 둘 다 "재고 있음"을 보고 차감해 재고가 음수가 될 수 있었음(초과 판매).
+  - `processOrder.jsp`가 `updateStock()`의 반환값을 확인하지 않아, 재고가 부족해도 주문이 완료됐음.
+  - 주문 INSERT·품목 저장·재고 차감·장바구니 삭제가 autocommit으로 따로 반영돼, 중간 실패 시 일부만 남았음(아래 "알려진 이슈"에 있던 항목).
+- **수정**
+  - `EarPhoneRepository.decreaseStock(Connection, int, long)` 추가: `UPDATE dbo.earphone SET stock = stock - ? WHERE productId = ? AND stock >= ?` 한 문장으로 확인과 차감을 같이 하고, 바뀐 행이 0이면 false. `updateStock()`은 이 메서드를 쓰도록 단순화.
+  - `processOrder.jsp`: `setAutoCommit(false)` → 주문·품목·재고·장바구니를 같은 커넥션에서 처리 → 성공 시 `commit()`, 실패 시 `rollback()`. 재고 부족이면 주문을 만들지 않고 장바구니를 그대로 둔 채 부족한 상품명을 안내.
+  - README의 장바구니 설명에서 실제 코드와 다르던 "비로그인 장바구니 병합" 문구를 실제 동작(로그인 후 이용, DB 기준)으로 수정.
+- **검증 한계**: 로컬 MSSQL에서 실제 주문 시나리오로 다시 확인해야 함. (SQLite로 같은 SQL을 재현해 예전 방식은 재고 −1, 새 방식은 두 번째 주문이 0행으로 거절되고, 재고 부족 시 주문·차감이 모두 롤백되는 것만 확인)
+
 ## 아직 커밋 안 된 변경사항 (2026-09-03 기준)
 
 1. **챗봇 `<br>` 노출 버그 수정**
@@ -76,7 +88,8 @@
 
 ## 알려진 이슈 / 미해결 사항
 
-- `processOrder.jsp`의 결제 트랜잭션에 명시적 commit/rollback이 없음 — 재고차감/주문삽입 중 하나가 실패해도 앞 단계는 이미 커밋됨 (MSSQL 기본 autocommit). 실서비스라면 손봐야 함.
+- ~~`processOrder.jsp`의 결제 트랜잭션에 명시적 commit/rollback이 없음~~ → 7번에서 해결.
+- `OrderRepository.cancelOrder()`의 재고 복원과 상태 변경도 트랜잭션으로 묶여 있지 않고, 상태 변경 UPDATE에 `orderStatus = '배송준비중'` 조건이 없어 같은 주문을 동시에 두 번 취소하면 재고가 두 번 복원될 수 있음 — 같은 방식(조건부 UPDATE + 트랜잭션)으로 보강 필요.
 - 전체상품 목록에 접근하는 진입점이 마땅치 않음(위 "시도했다가 원복한 것" 참고) — 재작업 필요 시 사용자와 디자인 먼저 합의할 것.
 - 회원 관리(전체 회원 목록/강제 탈퇴 등) 관리자 화면 없음 — 논의됐지만 범위에서 제외됨.
 - `bench/` 패키지는 프로덕션 배포와 무관한 실험용 스크립트 — `openrouter.api.key`, `gemini.api.key`는 앱 실행 자체엔 불필요, 벤치마크 재실행 시에만 필요.
