@@ -3,6 +3,7 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import dto.EarPhone;
@@ -204,48 +205,36 @@ public class EarPhoneRepository {
     }
 
     /**
-     * 결제 및 주문 발생 시 실시간 재고 감소 기능
+     * 결제 및 주문 발생 시 실시간 재고 감소 기능 (단독 호출용, 자체 커넥션 사용)
      */
     public boolean updateStock(int quantity, long productId) {
-        Connection conn = null;
-        PreparedStatement pstmtCheck = null;
-        PreparedStatement pstmtUpdate = null;
-        ResultSet rs = null;
-        boolean result = false;
-        
-        try {
-            conn = DBConnection.getConnection();
-            
-            String sqlCheck = "SELECT stock FROM dbo.earphone WHERE productId = ?";
-            pstmtCheck = conn.prepareStatement(sqlCheck);
-            pstmtCheck.setLong(1, productId);
-            rs = pstmtCheck.executeQuery();
-            
-            if (rs.next()) {
-                int currentStock = rs.getInt("stock");
-                if (currentStock < quantity) {
-                    System.out.println("재고 부족");
-                } else {
-                    String sqlUpdate = "UPDATE dbo.earphone SET stock = stock - ? WHERE productId = ?";
-                    pstmtUpdate = conn.prepareStatement(sqlUpdate);
-                    pstmtUpdate.setInt(1, quantity);
-                    pstmtUpdate.setLong(2, productId);
-                    
-                    int rows = pstmtUpdate.executeUpdate();
-                    if (rows > 0) result = true;
-                }
-            } else {
-                System.out.println("존재하지 않는 상품");
-            }
+        try (Connection conn = DBConnection.getConnection()) {
+            return decreaseStock(conn, quantity, productId);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try { if (rs != null) rs.close(); } catch(Exception e) {}
-            try { if (pstmtCheck != null) pstmtCheck.close(); } catch(Exception e) {}
-            try { if (pstmtUpdate != null) pstmtUpdate.close(); } catch(Exception e) {}
-            try { if (conn != null) conn.close(); } catch(Exception e) {}
+            return false;
         }
-        return result;
+    }
+
+    /**
+     * 호출한 쪽의 트랜잭션(conn) 안에서 재고를 차감한다.
+     *
+     * 예전에는 SELECT로 재고를 확인한 뒤 따로 UPDATE해서, 두 주문이 동시에 들어오면
+     * 둘 다 "재고 있음"을 보고 차감해 재고가 음수가 될 수 있었다(초과 판매).
+     * 지금은 재고 조건을 UPDATE의 WHERE에 넣어 DB가 확인과 차감을 한 문장으로 처리한다.
+     * 재고가 부족하면 바뀐 행이 0개라 false를 반환하고, 호출한 쪽이 주문 전체를 롤백한다.
+     */
+    public boolean decreaseStock(Connection conn, int quantity, long productId) throws SQLException {
+        if (quantity <= 0) {
+            return false;
+        }
+        String sql = "UPDATE dbo.earphone SET stock = stock - ? WHERE productId = ? AND stock >= ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, quantity);
+            pstmt.setLong(2, productId);
+            pstmt.setInt(3, quantity);
+            return pstmt.executeUpdate() > 0;
+        }
     }
 
     /**
